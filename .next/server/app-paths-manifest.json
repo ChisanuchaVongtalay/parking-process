@@ -1,0 +1,7 @@
+{
+  "/api/public/cameras/[id]/route": "app/api/public/cameras/[id]/route.js",
+  "/api/public/cameras/[id]/slots/route": "app/api/public/cameras/[id]/slots/route.js",
+  "/admin/zones/page": "app/admin/zones/page.js",
+  "/admin/cameras/page": "app/admin/cameras/page.js",
+  "/admin/cameras/[id]/calibration/page": "app/admin/cameras/[id]/calibration/page.js"
+}

@@ -1,0 +1,203 @@
+{
+  "version": 1,
+  "exported_at": "2026-04-05T14:09:32.153Z",
+  "zone": {
+    "id": "zone_5t0zj1f7zu02jqsz",
+    "name": "C5"
+  },
+  "cameras": [
+    {
+      "id": "cam_1pw709e5lwrswc5n",
+      "is_primary": false,
+      "background_image": "backgrounds/cam_1pw709e5lwrswc5n-2026-04-05T14-06-25-074Z-ec71b9ca.jpg",
+      "calibration": {
+        "pixel_threshold": 0.15,
+        "occupancy_threshold": 0.08,
+        "grayscale": true,
+        "blur_radius": 1,
+        "normalize": true,
+        "downscale": 1,
+        "lighting_compensation": 0.7,
+        "edge_weight": 1.5
+      },
+      "slots": [
+        {
+          "camera_slot_id": "cslot_5xwfb2945u2e2nvc",
+          "logical_slot_id": null,
+          "slot_code": "S01",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              41.5,
+              397
+            ],
+            [
+              62.5,
+              397
+            ],
+            [
+              62.5,
+              411
+            ],
+            [
+              41.5,
+              411
+            ]
+          ]
+        },
+        {
+          "camera_slot_id": "cslot_of9iawbxsxp6b18z",
+          "logical_slot_id": null,
+          "slot_code": "S02",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              122.5,
+              383
+            ],
+            [
+              161.5,
+              383
+            ],
+            [
+              161.5,
+              393
+            ],
+            [
+              122.5,
+              393
+            ]
+          ]
+        },
+        {
+          "camera_slot_id": "cslot_1gkmhrslr3vrmj5t",
+          "logical_slot_id": null,
+          "slot_code": "S03",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              226.5,
+              341
+            ],
+            [
+              256.5,
+              341
+            ],
+            [
+              256.5,
+              363
+            ],
+            [
+              226.5,
+              363
+            ]
+          ]
+        },
+        {
+          "camera_slot_id": "cslot_de5uh3760re8miju",
+          "logical_slot_id": null,
+          "slot_code": "S04",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              314.5,
+              310
+            ],
+            [
+              338.5,
+              310
+            ],
+            [
+              338.5,
+              324
+            ],
+            [
+              314.5,
+              324
+            ]
+          ]
+        },
+        {
+          "camera_slot_id": "cslot_s284weaizgfkgzqq",
+          "logical_slot_id": null,
+          "slot_code": "S05",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              350.5,
+              283
+            ],
+            [
+              363.5,
+              283
+            ],
+            [
+              363.5,
+              296
+            ],
+            [
+              350.5,
+              296
+            ]
+          ]
+        },
+        {
+          "camera_slot_id": "cslot_bfbo2lvxhp9bdvya",
+          "logical_slot_id": null,
+          "slot_code": "S06",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              405.5,
+              282
+            ],
+            [
+              428.5,
+              282
+            ],
+            [
+              428.5,
+              294
+            ],
+            [
+              405.5,
+              294
+            ]
+          ]
+        },
+        {
+          "camera_slot_id": "cslot_olytm2q2duur9ax6",
+          "logical_slot_id": null,
+          "slot_code": "S07",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              414.5,
+              259
+            ],
+            [
+              428.5,
+              259
+            ],
+            [
+              428.5,
+              267
+            ],
+            [
+              414.5,
+              267
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "logical_slots": []
+}

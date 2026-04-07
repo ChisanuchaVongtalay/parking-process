@@ -1,0 +1,141 @@
+{
+  "name": "MFU Parking (No Drive)",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        }
+      },
+      "id": "schedule",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 2,
+      "position": [
+        200,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{json:{cam_id:'cam01', rtsp:'rtsp://YOUR_CAM/stream'}}];"
+      },
+      "id": "list",
+      "name": "Camera List",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        420,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "command": "ffmpeg -y -i {{$json.rtsp}} -frames:v 1 -f image2pipe -vcodec mjpeg -",
+        "options": {
+          "binaryPropertyName": "snapshot"
+        }
+      },
+      "id": "ffmpeg",
+      "name": "RTSP Snapshot",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 2,
+      "position": [
+        640,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://YOUR_API_SERVER:8000/process?cam_id={{$json.cam_id}}",
+        "options": {
+          "bodyContentType": "multipart-form-data",
+          "sendBinaryProperty": [
+            {
+              "property": "snapshot"
+            }
+          ],
+          "headerParametersUi": {
+            "parameter": [
+              {
+                "name": "X-API-Key",
+                "value": "changeme"
+              }
+            ]
+          }
+        }
+      },
+      "id": "http",
+      "name": "Process Slots API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        860,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const r = $json; console.log(r); return [{json:r}];"
+      },
+      "id": "log",
+      "name": "Log Result",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Camera List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Camera List": {
+      "main": [
+        [
+          {
+            "node": "RTSP Snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RTSP Snapshot": {
+      "main": [
+        [
+          {
+            "node": "Process Slots API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Slots API": {
+      "main": [
+        [
+          {
+            "node": "Log Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

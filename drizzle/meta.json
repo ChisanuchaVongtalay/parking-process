@@ -1,0 +1,5 @@
+{
+  "version": "1",
+  "dialect": "sqlite",
+  "entries": ["0000_initial.sql", "0001_runtime_results.sql"]
+}

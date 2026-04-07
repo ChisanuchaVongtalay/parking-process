@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #a01d22;
+  --color-secondary: #c5a059;
+  --color-tertiary: #005979;
+  --color-neutral: #f8f9fa;
+  --color-success: #22c55e;
+  --color-border: #d6d9de;
+  --color-text: #131519;
+  --color-muted: #5a616b;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  color: var(--color-text);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(197, 160, 89, 0.15), transparent 36%),
+    radial-gradient(circle at 84% 16%, rgba(0, 89, 121, 0.12), transparent 42%),
+    linear-gradient(180deg, #ffffff 0%, var(--color-neutral) 65%);
+}
+
+* {
+  border-color: var(--color-border);
+}

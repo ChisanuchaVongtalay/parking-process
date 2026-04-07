@@ -1,0 +1,203 @@
+{
+  "version": 1,
+  "exported_at": "2026-04-06T09:05:45.484Z",
+  "zone": {
+    "id": "zone_5t0zj1f7zu02jqsz",
+    "name": "C5"
+  },
+  "cameras": [
+    {
+      "id": "cam_1pw709e5lwrswc5n",
+      "is_primary": false,
+      "background_image": "backgrounds/cam_1pw709e5lwrswc5n-2026-04-05T14-41-56-856Z-ffb375df.jpg",
+      "calibration": {
+        "pixel_threshold": 0.15,
+        "occupancy_threshold": 0.14,
+        "grayscale": true,
+        "blur_radius": 3,
+        "normalize": true,
+        "downscale": 1,
+        "lighting_compensation": 1,
+        "edge_weight": 1
+      },
+      "slots": [
+        {
+          "camera_slot_id": "cslot_i11zlc9h88se28qb",
+          "logical_slot_id": null,
+          "slot_code": "S01",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              223.61445783132532,
+              1300.8835341365464
+            ],
+            [
+              346.9879518072289,
+              1300.8835341365464
+            ],
+            [
+              346.9879518072289,
+              1413.9759036144578
+            ],
+            [
+              223.61445783132532,
+              1413.9759036144578
+            ]
+          ]
+        },
+        {
+          "camera_slot_id": "cslot_c5apm4sacftyufah",
+          "logical_slot_id": null,
+          "slot_code": "S02",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              681.1244979919679,
+              1254.6184738955824
+            ],
+            [
+              835.3413654618474,
+              1254.6184738955824
+            ],
+            [
+              835.3413654618474,
+              1362.570281124498
+            ],
+            [
+              681.1244979919679,
+              1362.570281124498
+            ]
+          ]
+        },
+        {
+          "camera_slot_id": "cslot_qbm379t5fs2xbenb",
+          "logical_slot_id": null,
+          "slot_code": "S03",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              1184.8995983935743,
+              1141.5261044176707
+            ],
+            [
+              1364.8192771084339,
+              1141.5261044176707
+            ],
+            [
+              1364.8192771084339,
+              1249.4779116465863
+            ],
+            [
+              1184.8995983935743,
+              1249.4779116465863
+            ]
+          ]
+        },
+        {
+          "camera_slot_id": "cslot_8rqhbcidvwqt5xde",
+          "logical_slot_id": null,
+          "slot_code": "S04",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              1508.7550200803214,
+              869.0763052208836
+            ],
+            [
+              1637.269076305221,
+              869.0763052208836
+            ],
+            [
+              1637.269076305221,
+              1038.714859437751
+            ],
+            [
+              1508.7550200803214,
+              1038.714859437751
+            ]
+          ]
+        },
+        {
+          "camera_slot_id": "cslot_dujfwtrf3tjebla3",
+          "logical_slot_id": null,
+          "slot_code": "S05",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              2254.136546184739,
+              941.0441767068273
+            ],
+            [
+              2300.401606425703,
+              941.0441767068273
+            ],
+            [
+              2300.401606425703,
+              1054.136546184739
+            ],
+            [
+              2254.136546184739,
+              1054.136546184739
+            ]
+          ]
+        },
+        {
+          "camera_slot_id": "cslot_hpyqrm0lhho6utnf",
+          "logical_slot_id": null,
+          "slot_code": "S06",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              2084.4979919678717,
+              750.843373493976
+            ],
+            [
+              2182.1686746987953,
+              750.843373493976
+            ],
+            [
+              2182.1686746987953,
+              833.0923694779117
+            ],
+            [
+              2084.4979919678717,
+              833.0923694779117
+            ]
+          ]
+        },
+        {
+          "camera_slot_id": "cslot_jo3pvai8bhkxc81y",
+          "logical_slot_id": null,
+          "slot_code": "S07",
+          "vehicle_type": "car",
+          "shape_type": "rect",
+          "points": [
+            [
+              2284.979919678715,
+              735.421686746988
+            ],
+            [
+              2377.510040160643,
+              735.421686746988
+            ],
+            [
+              2377.510040160643,
+              817.6706827309238
+            ],
+            [
+              2284.979919678715,
+              817.6706827309238
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "logical_slots": []
+}

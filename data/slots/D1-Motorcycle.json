@@ -1,0 +1,1311 @@
+{
+  "metadata": {
+    "timestamp": "2025-11-04T11:54:51.591Z",
+    "canvasSize": {
+      "width": 1400,
+      "height": 787
+    },
+    "totalSlots": 56,
+    "analyzed": true,
+    "pixelThreshold": 0.19,
+    "occupancyThreshold": 0.08,
+    "edgeWeight": 1.3,
+    "lightingCompensation": 0.5,
+    "preprocess": {
+      "grayscale": true,
+      "blurRadius": 1,
+      "normalize": true,
+      "downscale": 1
+    }
+  },
+  "slots": [
+    {
+      "id": 1,
+      "type": "motorcycle",
+      "roi": [
+        0.4272437878240184,
+        0.770105167084984,
+        0.026119707552560142,
+        0.03982658839635763
+      ],
+      "pixels": {
+        "x": 598,
+        "y": 606,
+        "width": 37,
+        "height": 31
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0.0035842293906810036,
+      "combinedScore": 0.001075268817204301,
+      "brightnessRatio": 1.0001941133874925,
+      "lightCompensated": false
+    },
+    {
+      "id": 2,
+      "type": "motorcycle",
+      "roi": [
+        0.3727655406429645,
+        0.7913460142297081,
+        0.02089576604204808,
+        0.042481694289448035
+      ],
+      "pixels": {
+        "x": 522,
+        "y": 623,
+        "width": 29,
+        "height": 33
+      },
+      "occupied": false,
+      "diffRatio": 0.011494252873563218,
+      "edgeRatio": 0.008576329331046312,
+      "structuralRatio": 0.05329153605015674,
+      "combinedScore": 0.02859663650164626,
+      "brightnessRatio": 0.9999121539895849,
+      "lightCompensated": false
+    },
+    {
+      "id": 3,
+      "type": "motorcycle",
+      "roi": [
+        0.30410802364766376,
+        0.7900184612831628,
+        0.01865693396611436,
+        0.05177456491526488
+      ],
+      "pixels": {
+        "x": 426,
+        "y": 622,
+        "width": 26,
+        "height": 41
+      },
+      "occupied": false,
+      "diffRatio": 0.009615384615384616,
+      "edgeRatio": 0.014553014553014554,
+      "structuralRatio": 0.03173076923076923,
+      "combinedScore": 0.021026507276507275,
+      "brightnessRatio": 0.9997891489800373,
+      "lightCompensated": false
+    },
+    {
+      "id": 4,
+      "type": "motorcycle",
+      "roi": [
+        0.25336116325983277,
+        0.7953286730693438,
+        0.017910656607469783,
+        0.039826588396357485
+      ],
+      "pixels": {
+        "x": 355,
+        "y": 626,
+        "width": 25,
+        "height": 31
+      },
+      "occupied": false,
+      "diffRatio": 0.011612903225806452,
+      "edgeRatio": 0.010869565217391304,
+      "structuralRatio": 0.05806451612903226,
+      "combinedScore": 0.030445301542776998,
+      "brightnessRatio": 1.0000264114470179,
+      "lightCompensated": false
+    },
+    {
+      "id": 5,
+      "type": "motorcycle",
+      "roi": [
+        0.18395736890588743,
+        0.7979837789624342,
+        0.021642043400692614,
+        0.04380924723599338
+      ],
+      "pixels": {
+        "x": 258,
+        "y": 628,
+        "width": 30,
+        "height": 34
+      },
+      "occupied": true,
+      "diffRatio": 0.257843137254902,
+      "edgeRatio": 0.19746835443037974,
+      "structuralRatio": 0.44803921568627453,
+      "combinedScore": 0.4179257880367337,
+      "brightnessRatio": 0.9995314970483844,
+      "lightCompensated": false
+    },
+    {
+      "id": 6,
+      "type": "motorcycle",
+      "roi": [
+        0.09589664058582771,
+        0.796656226015889,
+        0.035821313214939525,
+        0.05442967080835528
+      ],
+      "pixels": {
+        "x": 134,
+        "y": 627,
+        "width": 50,
+        "height": 43
+      },
+      "occupied": false,
+      "diffRatio": 0.012857142857142857,
+      "edgeRatio": 0.00951683748169839,
+      "structuralRatio": 0.024761904761904763,
+      "combinedScore": 0.021522903158335077,
+      "brightnessRatio": 1.000047731903307,
+      "lightCompensated": false
+    },
+    {
+      "id": 7,
+      "type": "motorcycle",
+      "roi": [
+        0.02126890472137035,
+        0.8112593084278868,
+        0.03432875849765039,
+        0.051774564915264734
+      ],
+      "pixels": {
+        "x": 30,
+        "y": 638,
+        "width": 48,
+        "height": 41
+      },
+      "occupied": false,
+      "diffRatio": 0.0026041666666666665,
+      "edgeRatio": 0.003943217665615142,
+      "structuralRatio": 0.033854166666666664,
+      "combinedScore": 0.013273034963196633,
+      "brightnessRatio": 1.0000456668364337,
+      "lightCompensated": false
+    },
+    {
+      "id": 8,
+      "type": "motorcycle",
+      "roi": [
+        0.2697792651500134,
+        0.4714057541123027,
+        0.020149488683403466,
+        0.034516376610176536
+      ],
+      "pixels": {
+        "x": 378,
+        "y": 371,
+        "width": 28,
+        "height": 27
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0.007936507936507936,
+      "combinedScore": 0.0023809523809523807,
+      "brightnessRatio": 0.9999184607753466,
+      "lightCompensated": false
+    },
+    {
+      "id": 9,
+      "type": "motorcycle",
+      "roi": [
+        0.2093307990998029,
+        0.45813022464685016,
+        0.024627152835270952,
+        0.047791906075629054
+      ],
+      "pixels": {
+        "x": 293,
+        "y": 361,
+        "width": 34,
+        "height": 38
+      },
+      "occupied": true,
+      "diffRatio": 0.1494435612082671,
+      "edgeRatio": 0.2088607594936709,
+      "structuralRatio": 0.3004769475357711,
+      "combinedScore": 0.26673854420317566,
+      "brightnessRatio": 0.9998039497646091,
+      "lightCompensated": false
+    },
+    {
+      "id": 10,
+      "type": "motorcycle",
+      "roi": [
+        0.14067328210450214,
+        0.45813022464685016,
+        0.02388087547662636,
+        0.04513680018253851
+      ],
+      "pixels": {
+        "x": 197,
+        "y": 361,
+        "width": 33,
+        "height": 36
+      },
+      "occupied": true,
+      "diffRatio": 0.12813852813852813,
+      "edgeRatio": 0.1672185430463576,
+      "structuralRatio": 0.1645021645021645,
+      "combinedScore": 0.19922758808520397,
+      "brightnessRatio": 1.0000381449323423,
+      "lightCompensated": false
+    },
+    {
+      "id": 11,
+      "type": "motorcycle",
+      "roi": [
+        0.09738919530311686,
+        0.4714057541123027,
+        0.015671824531536042,
+        0.043809247235993234
+      ],
+      "pixels": {
+        "x": 136,
+        "y": 371,
+        "width": 22,
+        "height": 34
+      },
+      "occupied": false,
+      "diffRatio": 0.023809523809523808,
+      "edgeRatio": 0.04891304347826087,
+      "structuralRatio": 0.08123249299719888,
+      "combinedScore": 0.054537967360857385,
+      "brightnessRatio": 0.9994566284161706,
+      "lightCompensated": false
+    },
+    {
+      "id": 12,
+      "type": "motorcycle",
+      "roi": [
+        0.04962744434986415,
+        0.46476798937957636,
+        0.017910656607469762,
+        0.05310211786181008
+      ],
+      "pixels": {
+        "x": 69,
+        "y": 366,
+        "width": 25,
+        "height": 42
+      },
+      "occupied": true,
+      "diffRatio": 0.1795121951219512,
+      "edgeRatio": 0.17889908256880735,
+      "structuralRatio": 0.4165853658536585,
+      "combinedScore": 0.3277446856119937,
+      "brightnessRatio": 0.9999273872348564,
+      "lightCompensated": false
+    },
+    {
+      "id": 13,
+      "type": "motorcycle",
+      "roi": [
+        0.007835912265768024,
+        0.4634404364330312,
+        0.014925547172891471,
+        0.051774564915264734
+      ],
+      "pixels": {
+        "x": 11,
+        "y": 365,
+        "width": 21,
+        "height": 41
+      },
+      "occupied": true,
+      "diffRatio": 0.1275,
+      "edgeRatio": 0.14006514657980457,
+      "structuralRatio": 0.34375,
+      "combinedScore": 0.2488334690553746,
+      "brightnessRatio": 1.0002787281253076,
+      "lightCompensated": false
+    },
+    {
+      "id": 14,
+      "type": "motorcycle",
+      "roi": [
+        0.33395911799344674,
+        0.3160820593665083,
+        0.02462715283527091,
+        0.042481694289448035
+      ],
+      "pixels": {
+        "x": 468,
+        "y": 249,
+        "width": 34,
+        "height": 33
+      },
+      "occupied": false,
+      "diffRatio": 0.03208556149732621,
+      "edgeRatio": 0.028428093645484948,
+      "structuralRatio": 0.06506238859180036,
+      "combinedScore": 0.055299930248779355,
+      "brightnessRatio": 1.0000628566758776,
+      "lightCompensated": false
+    },
+    {
+      "id": 15,
+      "type": "motorcycle",
+      "roi": [
+        0.291421308550706,
+        0.3107718475803273,
+        0.01940321132475893,
+        0.047791906075629054
+      ],
+      "pixels": {
+        "x": 408,
+        "y": 245,
+        "width": 27,
+        "height": 38
+      },
+      "occupied": true,
+      "diffRatio": 0.16716716716716717,
+      "edgeRatio": 0.2071917808219178,
+      "structuralRatio": 0.16416416416416416,
+      "combinedScore": 0.24335134792326574,
+      "brightnessRatio": 0.9998397414179072,
+      "lightCompensated": false
+    },
+    {
+      "id": 16,
+      "type": "motorcycle",
+      "roi": [
+        0.240674448162875,
+        0.3346678006181418,
+        0.016418101890180635,
+        0.04115414134290283
+      ],
+      "pixels": {
+        "x": 337,
+        "y": 263,
+        "width": 23,
+        "height": 32
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0.005681818181818182,
+      "combinedScore": 0.0017045454545454545,
+      "brightnessRatio": 0.9999464263886004,
+      "lightCompensated": false
+    },
+    {
+      "id": 17,
+      "type": "motorcycle",
+      "roi": [
+        0.19664408400284514,
+        0.3187371652595988,
+        0.016418101890180635,
+        0.03982658839635756
+      ],
+      "pixels": {
+        "x": 275,
+        "y": 251,
+        "width": 23,
+        "height": 31
+      },
+      "occupied": true,
+      "diffRatio": 0.3093841642228739,
+      "edgeRatio": 0.2492063492063492,
+      "structuralRatio": 0.38269794721407624,
+      "combinedScore": 0.45659037378392214,
+      "brightnessRatio": 0.9997691809805646,
+      "lightCompensated": false
+    },
+    {
+      "id": 18,
+      "type": "motorcycle",
+      "roi": [
+        0.14515094625636957,
+        0.3160820593665083,
+        0.022388320759337207,
+        0.04115414134290276
+      ],
+      "pixels": {
+        "x": 203,
+        "y": 249,
+        "width": 31,
+        "height": 32
+      },
+      "occupied": true,
+      "diffRatio": 0.37701612903225806,
+      "edgeRatio": 0.31153388822829964,
+      "structuralRatio": 0.40423387096774194,
+      "combinedScore": 0.5387856957922595,
+      "brightnessRatio": 1.0000885432931637,
+      "lightCompensated": false
+    },
+    {
+      "id": 19,
+      "type": "motorcycle",
+      "roi": [
+        0.09962802737905059,
+        0.3134269534734178,
+        0.02089576604204806,
+        0.04380924723599327
+      ],
+      "pixels": {
+        "x": 139,
+        "y": 247,
+        "width": 29,
+        "height": 34
+      },
+      "occupied": true,
+      "diffRatio": 0.11460446247464504,
+      "edgeRatio": 0.12218649517684887,
+      "structuralRatio": 0.2718052738336714,
+      "combinedScore": 0.2120302889977368,
+      "brightnessRatio": 0.9998818717466202,
+      "lightCompensated": false
+    },
+    {
+      "id": 20,
+      "type": "motorcycle",
+      "roi": [
+        0.06380671416411106,
+        0.3333402476715966,
+        0.01865693396611434,
+        0.04115414134290276
+      ],
+      "pixels": {
+        "x": 89,
+        "y": 262,
+        "width": 26,
+        "height": 32
+      },
+      "occupied": true,
+      "diffRatio": 0.2127403846153846,
+      "edgeRatio": 0.15551537070524413,
+      "structuralRatio": 0.29086538461538464,
+      "combinedScore": 0.32021699819168176,
+      "brightnessRatio": 0.9942626557064934,
+      "lightCompensated": false
+    },
+    {
+      "id": 21,
+      "type": "motorcycle",
+      "roi": [
+        0.024254014155948644,
+        0.3320126947250513,
+        0.014925547172891471,
+        0.03186127071708599
+      ],
+      "pixels": {
+        "x": 34,
+        "y": 261,
+        "width": 21,
+        "height": 25
+      },
+      "occupied": true,
+      "diffRatio": 0.254,
+      "edgeRatio": 0.21008403361344538,
+      "structuralRatio": 0.264,
+      "combinedScore": 0.3605109243697479,
+      "brightnessRatio": 1.0009522703518754,
+      "lightCompensated": false
+    },
+    {
+      "id": 22,
+      "type": "motorcycle",
+      "roi": [
+        0.26828671043272423,
+        0.20324005891016197,
+        0.009701605662379466,
+        0.021240847144724018
+      ],
+      "pixels": {
+        "x": 376,
+        "y": 160,
+        "width": 14,
+        "height": 17
+      },
+      "occupied": false,
+      "diffRatio": 0.014423076923076924,
+      "edgeRatio": 0,
+      "structuralRatio": 0.0673076923076923,
+      "combinedScore": 0.03461538461538462,
+      "brightnessRatio": 1.0002473500406213,
+      "lightCompensated": false
+    },
+    {
+      "id": 23,
+      "type": "motorcycle",
+      "roi": [
+        0.2996303594957963,
+        0.208550270696343,
+        0.007462773586445743,
+        0.023895953037814492
+      ],
+      "pixels": {
+        "x": 419,
+        "y": 164,
+        "width": 10,
+        "height": 19
+      },
+      "occupied": true,
+      "diffRatio": 0.25555555555555554,
+      "edgeRatio": 0.1978021978021978,
+      "structuralRatio": 0.36666666666666664,
+      "combinedScore": 0.3912698412698412,
+      "brightnessRatio": 1.0135589611854119,
+      "lightCompensated": false
+    },
+    {
+      "id": 24,
+      "type": "motorcycle",
+      "roi": [
+        0.22798773306591727,
+        0.2005849530170715,
+        0.011940437738313148,
+        0.03318882366363126
+      ],
+      "pixels": {
+        "x": 319,
+        "y": 158,
+        "width": 17,
+        "height": 26
+      },
+      "occupied": true,
+      "diffRatio": 0.055288461538461536,
+      "edgeRatio": 0.04597701149425287,
+      "structuralRatio": 0.1658653846153846,
+      "combinedScore": 0.11102508841732979,
+      "brightnessRatio": 1.0000439826672884,
+      "lightCompensated": false
+    },
+    {
+      "id": 25,
+      "type": "motorcycle",
+      "roi": [
+        0.19067386513368859,
+        0.20987782364288823,
+        0.014925547172891445,
+        0.027878611877450277
+      ],
+      "pixels": {
+        "x": 267,
+        "y": 165,
+        "width": 21,
+        "height": 22
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0.011904761904761904,
+      "combinedScore": 0.003571428571428571,
+      "brightnessRatio": 1.0001063029280652,
+      "lightCompensated": false
+    },
+    {
+      "id": 26,
+      "type": "motorcycle",
+      "roi": [
+        0.09962802737905059,
+        0.2324462237341575,
+        0.01716437924882519,
+        0.021240847144724018
+      ],
+      "pixels": {
+        "x": 139,
+        "y": 183,
+        "width": 24,
+        "height": 17
+      },
+      "occupied": true,
+      "diffRatio": 0.0859375,
+      "edgeRatio": 0.08947368421052632,
+      "structuralRatio": 0.125,
+      "combinedScore": 0.13506907894736842,
+      "brightnessRatio": 1.0002131177876525,
+      "lightCompensated": false
+    },
+    {
+      "id": 27,
+      "type": "motorcycle",
+      "roi": [
+        0.06380671416411106,
+        0.22315335310834075,
+        0.015671824531536042,
+        0.03186127071708603
+      ],
+      "pixels": {
+        "x": 89,
+        "y": 176,
+        "width": 22,
+        "height": 25
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0.0038095238095238095,
+      "combinedScore": 0.0011428571428571427,
+      "brightnessRatio": 1.0001602511709322,
+      "lightCompensated": false
+    },
+    {
+      "id": 28,
+      "type": "motorcycle",
+      "roi": [
+        0.03544817453561725,
+        0.23642888257379324,
+        0.01567182453153605,
+        0.023895953037814527
+      ],
+      "pixels": {
+        "x": 50,
+        "y": 186,
+        "width": 22,
+        "height": 19
+      },
+      "occupied": false,
+      "diffRatio": 0.0291005291005291,
+      "edgeRatio": 0.02575107296137339,
+      "structuralRatio": 0.10582010582010581,
+      "combinedScore": 0.06419420033153939,
+      "brightnessRatio": 1.0000324933506173,
+      "lightCompensated": false
+    },
+    {
+      "id": 29,
+      "type": "motorcycle",
+      "roi": [
+        0.9757576464277801,
+        0.6479702960028211,
+        0.014925547172891487,
+        0.042481694289448035
+      ],
+      "pixels": {
+        "x": 1366,
+        "y": 510,
+        "width": 21,
+        "height": 33
+      },
+      "occupied": true,
+      "diffRatio": 0.3090909090909091,
+      "edgeRatio": 0.19221967963386727,
+      "structuralRatio": 0.18787878787878787,
+      "combinedScore": 0.3904431038069482,
+      "brightnessRatio": 0.9993662783394061,
+      "lightCompensated": false
+    },
+    {
+      "id": 30,
+      "type": "motorcycle",
+      "roi": [
+        0.9406826105714852,
+        0.58955796635483,
+        0.011940437738313188,
+        0.038499035449812216
+      ],
+      "pixels": {
+        "x": 1317,
+        "y": 464,
+        "width": 17,
+        "height": 30
+      },
+      "occupied": true,
+      "diffRatio": 0.27708333333333335,
+      "edgeRatio": 0.22098214285714285,
+      "structuralRatio": 0.29791666666666666,
+      "combinedScore": 0.3951860119047619,
+      "brightnessRatio": 1.0000287207114877,
+      "lightCompensated": false
+    },
+    {
+      "id": 31,
+      "type": "motorcycle",
+      "roi": [
+        0.9138166256602804,
+        0.5563691426911986,
+        0.008955328303734892,
+        0.042481694289448035
+      ],
+      "pixels": {
+        "x": 1279,
+        "y": 438,
+        "width": 13,
+        "height": 33
+      },
+      "occupied": true,
+      "diffRatio": 0.33585858585858586,
+      "edgeRatio": 0.14022140221402213,
+      "structuralRatio": 0.10101010101010101,
+      "combinedScore": 0.384390398449439,
+      "brightnessRatio": 1.0000390739226974,
+      "lightCompensated": false
+    },
+    {
+      "id": 32,
+      "type": "motorcycle",
+      "roi": [
+        0.8839655313144975,
+        0.5258354249206579,
+        0.008955328303734892,
+        0.030533717770540716
+      ],
+      "pixels": {
+        "x": 1238,
+        "y": 414,
+        "width": 13,
+        "height": 24
+      },
+      "occupied": true,
+      "diffRatio": 0.03819444444444445,
+      "edgeRatio": 0.018518518518518517,
+      "structuralRatio": 0.16666666666666666,
+      "combinedScore": 0.09060185185185185,
+      "brightnessRatio": 0.999842189621016,
+      "lightCompensated": false
+    },
+    {
+      "id": 33,
+      "type": "motorcycle",
+      "roi": [
+        0.8645623199897386,
+        0.4833537306312099,
+        0.007462773586445662,
+        0.035843929556721735
+      ],
+      "pixels": {
+        "x": 1210,
+        "y": 380,
+        "width": 10,
+        "height": 28
+      },
+      "occupied": false,
+      "diffRatio": 0.05357142857142857,
+      "edgeRatio": 0.061855670103092786,
+      "structuralRatio": 0.04642857142857143,
+      "combinedScore": 0.07554123711340206,
+      "brightnessRatio": 0.9993448502330853,
+      "lightCompensated": false
+    },
+    {
+      "id": 34,
+      "type": "motorcycle",
+      "roi": [
+        0.8324723935680219,
+        0.44352714223485235,
+        0.009701605662379344,
+        0.03982658839635756
+      ],
+      "pixels": {
+        "x": 1165,
+        "y": 349,
+        "width": 14,
+        "height": 31
+      },
+      "occupied": true,
+      "diffRatio": 0.43672456575682383,
+      "edgeRatio": 0.23920265780730898,
+      "structuralRatio": 0.22084367245657568,
+      "combinedScore": 0.5340740130087467,
+      "brightnessRatio": 1.0080767194282945,
+      "lightCompensated": false
+    },
+    {
+      "id": 35,
+      "type": "motorcycle",
+      "roi": [
+        0.8056064086568173,
+        0.4103383185712211,
+        0.012686715096957804,
+        0.034516376610176536
+      ],
+      "pixels": {
+        "x": 1128,
+        "y": 323,
+        "width": 18,
+        "height": 27
+      },
+      "occupied": true,
+      "diffRatio": 0.14596949891067537,
+      "edgeRatio": 0.13010204081632654,
+      "structuralRatio": 0.3681917211328976,
+      "combinedScore": 0.2733402805566671,
+      "brightnessRatio": 1.0001349788077494,
+      "lightCompensated": false
+    },
+    {
+      "id": 36,
+      "type": "motorcycle",
+      "roi": [
+        0.7824718105388355,
+        0.37449438901449933,
+        0.011940437738313188,
+        0.035843929556721735
+      ],
+      "pixels": {
+        "x": 1095,
+        "y": 295,
+        "width": 17,
+        "height": 28
+      },
+      "occupied": true,
+      "diffRatio": 0.5647321428571429,
+      "edgeRatio": 0.3426791277258567,
+      "structuralRatio": 0.45535714285714285,
+      "combinedScore": 0.7458875723186471,
+      "brightnessRatio": 1.0141522674504866,
+      "lightCompensated": false
+    },
+    {
+      "id": 37,
+      "type": "motorcycle",
+      "roi": [
+        0.7488893293998297,
+        0.3426331182974133,
+        0.013432992455602418,
+        0.037171482503267086
+      ],
+      "pixels": {
+        "x": 1048,
+        "y": 270,
+        "width": 19,
+        "height": 29
+      },
+      "occupied": true,
+      "diffRatio": 0.25287356321839083,
+      "edgeRatio": 0.21818181818181817,
+      "structuralRatio": 0.3486590038314176,
+      "combinedScore": 0.3858349007314525,
+      "brightnessRatio": 0.999760095903488,
+      "lightCompensated": false
+    },
+    {
+      "id": 38,
+      "type": "motorcycle",
+      "roi": [
+        0.716799402978113,
+        0.3107718475803273,
+        0.011194160379668656,
+        0.03318882366363126
+      ],
+      "pixels": {
+        "x": 1004,
+        "y": 245,
+        "width": 16,
+        "height": 26
+      },
+      "occupied": true,
+      "diffRatio": 0.48717948717948717,
+      "edgeRatio": 0.3074626865671642,
+      "structuralRatio": 0.40512820512820513,
+      "combinedScore": 0.64868809797168,
+      "brightnessRatio": 0.9962509819536105,
+      "lightCompensated": false
+    },
+    {
+      "id": 39,
+      "type": "motorcycle",
+      "roi": [
+        0.690679695425553,
+        0.288203447489058,
+        0.014179269814246871,
+        0.03318882366363126
+      ],
+      "pixels": {
+        "x": 967,
+        "y": 227,
+        "width": 20,
+        "height": 26
+      },
+      "occupied": false,
+      "diffRatio": 0.02834008097165992,
+      "edgeRatio": 0.05042016806722689,
+      "structuralRatio": 0.07489878542510121,
+      "combinedScore": 0.05736433844792978,
+      "brightnessRatio": 0.9999747982059966,
+      "lightCompensated": false
+    },
+    {
+      "id": 40,
+      "type": "motorcycle",
+      "roi": [
+        0.6645599878729929,
+        0.3028065299010558,
+        0.01044788302102404,
+        0.018585741251633505
+      ],
+      "pixels": {
+        "x": 930,
+        "y": 238,
+        "width": 15,
+        "height": 15
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 0.9999122799869425,
+      "lightCompensated": false
+    },
+    {
+      "id": 41,
+      "type": "motorcycle",
+      "roi": [
+        0.6481418859828122,
+        0.25899728266506256,
+        0.012686715096957723,
+        0.03053371777054075
+      ],
+      "pixels": {
+        "x": 907,
+        "y": 204,
+        "width": 18,
+        "height": 24
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0.024509803921568627,
+      "combinedScore": 0.007352941176470588,
+      "brightnessRatio": 0.9997383315136756,
+      "lightCompensated": false
+    },
+    {
+      "id": 42,
+      "type": "motorcycle",
+      "roi": [
+        0.6175445142783847,
+        0.2709452591839698,
+        0.011194160379668574,
+        0.022568400091269255
+      ],
+      "pixels": {
+        "x": 865,
+        "y": 213,
+        "width": 16,
+        "height": 18
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0001178627162146,
+      "lightCompensated": false
+    },
+    {
+      "id": 43,
+      "type": "motorcycle",
+      "roi": [
+        0.6041115218227824,
+        0.2271360119479765,
+        0.020149488683403466,
+        0.022568400091269255
+      ],
+      "pixels": {
+        "x": 846,
+        "y": 179,
+        "width": 28,
+        "height": 18
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0.014705882352941176,
+      "combinedScore": 0.004411764705882353,
+      "brightnessRatio": 0.9999921333335184,
+      "lightCompensated": false
+    },
+    {
+      "id": 44,
+      "type": "motorcycle",
+      "roi": [
+        0.5824694784220897,
+        0.20722271774979772,
+        0.009701605662379426,
+        0.027878611877450277
+      ],
+      "pixels": {
+        "x": 815,
+        "y": 163,
+        "width": 14,
+        "height": 22
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0.003663003663003663,
+      "combinedScore": 0.001098901098901099,
+      "brightnessRatio": 0.9997960475512905,
+      "lightCompensated": false
+    },
+    {
+      "id": 45,
+      "type": "motorcycle",
+      "roi": [
+        0.5660513765319092,
+        0.18996452944470948,
+        0.007462773586445743,
+        0.03053371777054075
+      ],
+      "pixels": {
+        "x": 792,
+        "y": 150,
+        "width": 10,
+        "height": 24
+      },
+      "occupied": false,
+      "diffRatio": 0.0375,
+      "edgeRatio": 0.028985507246376812,
+      "structuralRatio": 0.0375,
+      "combinedScore": 0.05251811594202899,
+      "brightnessRatio": 0.999991998196927,
+      "lightCompensated": false
+    },
+    {
+      "id": 46,
+      "type": "motorcycle",
+      "roi": [
+        0.5459018878485057,
+        0.19527474123089048,
+        0.010447883021023958,
+        0.021240847144724018
+      ],
+      "pixels": {
+        "x": 764,
+        "y": 154,
+        "width": 15,
+        "height": 17
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0001323462323244,
+      "lightCompensated": false
+    },
+    {
+      "id": 47,
+      "type": "motorcycle",
+      "roi": [
+        0.5317226180342587,
+        0.19527474123089048,
+        0.007462773586445743,
+        0.01991329419817878
+      ],
+      "pixels": {
+        "x": 744,
+        "y": 154,
+        "width": 10,
+        "height": 16
+      },
+      "occupied": false,
+      "diffRatio": 0.02666666666666667,
+      "edgeRatio": 0.038461538461538464,
+      "structuralRatio": 0.02666666666666667,
+      "combinedScore": 0.03966666666666667,
+      "brightnessRatio": 1.0000460601003025,
+      "lightCompensated": false
+    },
+    {
+      "id": 48,
+      "type": "motorcycle",
+      "roi": [
+        0.5182896255786564,
+        0.16474102346034972,
+        0.008209050945090357,
+        0.019913294198178742
+      ],
+      "pixels": {
+        "x": 726,
+        "y": 130,
+        "width": 11,
+        "height": 16
+      },
+      "occupied": true,
+      "diffRatio": 0.21212121212121213,
+      "edgeRatio": 0.16296296296296298,
+      "structuralRatio": 0.45454545454545453,
+      "combinedScore": 0.3696700336700337,
+      "brightnessRatio": 0.9999907734453045,
+      "lightCompensated": false
+    },
+    {
+      "id": 49,
+      "type": "motorcycle",
+      "roi": [
+        0.4966475821779638,
+        0.15013794104835196,
+        0.011194160379668574,
+        0.019913294198178763
+      ],
+      "pixels": {
+        "x": 695,
+        "y": 118,
+        "width": 16,
+        "height": 16
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 0.9996332085915782,
+      "lightCompensated": false
+    },
+    {
+      "id": 50,
+      "type": "motorcycle",
+      "roi": [
+        0.4847071444396506,
+        0.1275695409570827,
+        0.009701605662379507,
+        0.015930635358543013
+      ],
+      "pixels": {
+        "x": 679,
+        "y": 100,
+        "width": 14,
+        "height": 13
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0002051100796556,
+      "lightCompensated": false
+    },
+    {
+      "id": 51,
+      "type": "motorcycle",
+      "roi": [
+        0.4488858312247111,
+        0.12889709390362794,
+        0.011194160379668574,
+        0.021240847144724018
+      ],
+      "pixels": {
+        "x": 628,
+        "y": 101,
+        "width": 16,
+        "height": 17
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.000229245051143,
+      "lightCompensated": false
+    },
+    {
+      "id": 52,
+      "type": "motorcycle",
+      "roi": [
+        0.433214006693175,
+        0.11562156443817544,
+        0.009701605662379507,
+        0.022568400091269272
+      ],
+      "pixels": {
+        "x": 606,
+        "y": 91,
+        "width": 14,
+        "height": 18
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.000091033507439,
+      "lightCompensated": false
+    },
+    {
+      "id": 53,
+      "type": "motorcycle",
+      "roi": [
+        0.4190347368789281,
+        0.10898379970544918,
+        0.009701605662379426,
+        0.017258188305088268
+      ],
+      "pixels": {
+        "x": 587,
+        "y": 86,
+        "width": 14,
+        "height": 14
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0001669923620717,
+      "lightCompensated": false
+    },
+    {
+      "id": 54,
+      "type": "motorcycle",
+      "roi": [
+        0.40933313121654863,
+        0.10234603497272293,
+        0.007462773586445743,
+        0.019913294198178763
+      ],
+      "pixels": {
+        "x": 573,
+        "y": 81,
+        "width": 10,
+        "height": 16
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 0.9999434921368078,
+      "lightCompensated": false
+    },
+    {
+      "id": 55,
+      "type": "motorcycle",
+      "roi": [
+        0.39291502932636807,
+        0.09836337613308718,
+        0.013432992455602257,
+        0.019913294198178763
+      ],
+      "pixels": {
+        "x": 550,
+        "y": 77,
+        "width": 19,
+        "height": 16
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 0.9996995569598149,
+      "lightCompensated": false
+    },
+    {
+      "id": 56,
+      "type": "motorcycle",
+      "roi": [
+        0.40037780291281383,
+        0.04658881121782239,
+        0.014925547172891405,
+        0.021240847144724007
+      ],
+      "pixels": {
+        "x": 561,
+        "y": 37,
+        "width": 21,
+        "height": 17
+      },
+      "occupied": false,
+      "diffRatio": 0.01875,
+      "edgeRatio": 0.016666666666666666,
+      "structuralRatio": 0.184375,
+      "combinedScore": 0.07622916666666667,
+      "brightnessRatio": 1.0001025574712004,
+      "lightCompensated": false
+    }
+  ]
+}

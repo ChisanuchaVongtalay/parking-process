@@ -1,0 +1,713 @@
+{
+  "metadata": {
+    "timestamp": "2025-11-06T17:20:39.929Z",
+    "canvasSize": {
+      "width": 1400,
+      "height": 787
+    },
+    "totalSlots": 30,
+    "analyzed": true,
+    "pixelThreshold": 0.15,
+    "occupancyThreshold": 0.02,
+    "edgeWeight": 0.5,
+    "lightingCompensation": 0.7,
+    "preprocess": {
+      "grayscale": true,
+      "blurRadius": 1,
+      "normalize": true,
+      "downscale": 1
+    }
+  },
+  "slots": [
+    {
+      "id": 3,
+      "type": "car",
+      "roi": [
+        0.05261255378444245,
+        0.43688937750212614,
+        0.012686715096957754,
+        0.025223505984359764
+      ],
+      "pixels": {
+        "x": 74,
+        "y": 344,
+        "width": 18,
+        "height": 20
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0003601533885569,
+      "lightCompensated": false
+    },
+    {
+      "id": 4,
+      "type": "car",
+      "roi": [
+        0.10410569153091803,
+        0.34661577713704905,
+        0.01865693396611434,
+        0.021240847144724018
+      ],
+      "pixels": {
+        "x": 146,
+        "y": 273,
+        "width": 26,
+        "height": 17
+      },
+      "occupied": true,
+      "diffRatio": 0.07211538461538461,
+      "edgeRatio": 0,
+      "structuralRatio": 0.004807692307692308,
+      "combinedScore": 0.0735576923076923,
+      "brightnessRatio": 0.9989147085024846,
+      "lightCompensated": false
+    },
+    {
+      "id": 5,
+      "type": "car",
+      "roi": [
+        0.03320934245968352,
+        0.33068514177850605,
+        0.02089576604204806,
+        0.03186127071708606
+      ],
+      "pixels": {
+        "x": 46,
+        "y": 260,
+        "width": 29,
+        "height": 25
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0002460474447863,
+      "lightCompensated": false
+    },
+    {
+      "id": 7,
+      "type": "car",
+      "roi": [
+        0.11679240662787578,
+        0.18996452944470948,
+        0.009701605662379466,
+        0.013275529465452483
+      ],
+      "pixels": {
+        "x": 164,
+        "y": 150,
+        "width": 14,
+        "height": 10
+      },
+      "occupied": true,
+      "diffRatio": 0.023076923076923078,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0.023076923076923078,
+      "brightnessRatio": 0.9989961884795034,
+      "lightCompensated": false
+    },
+    {
+      "id": 8,
+      "type": "car",
+      "roi": [
+        0.060821604729532755,
+        0.19660229417743572,
+        0.01044788302102403,
+        0.01593063535854303
+      ],
+      "pixels": {
+        "x": 85,
+        "y": 155,
+        "width": 15,
+        "height": 13
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0003238730088442,
+      "lightCompensated": false
+    },
+    {
+      "id": 10,
+      "type": "car",
+      "roi": [
+        0.039179561328840116,
+        0.19527474123089048,
+        0.011194160379668609,
+        0.014603082411997757
+      ],
+      "pixels": {
+        "x": 55,
+        "y": 154,
+        "width": 16,
+        "height": 11
+      },
+      "occupied": true,
+      "diffRatio": 0.012121212121212121,
+      "edgeRatio": 0,
+      "structuralRatio": 0.030303030303030304,
+      "combinedScore": 0.02121212121212121,
+      "brightnessRatio": 1.000231188922946,
+      "lightCompensated": false
+    },
+    {
+      "id": 11,
+      "type": "car",
+      "roi": [
+        0.048134889632575,
+        0.1673961293534402,
+        0.008209050945090307,
+        0.01327552946545252
+      ],
+      "pixels": {
+        "x": 67,
+        "y": 132,
+        "width": 11,
+        "height": 10
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 0.9997616387505351,
+      "lightCompensated": false
+    },
+    {
+      "id": 12,
+      "type": "car",
+      "roi": [
+        0.034701897176972675,
+        0.1673961293534402,
+        0.007462773586445738,
+        0.014603082411997757
+      ],
+      "pixels": {
+        "x": 49,
+        "y": 132,
+        "width": 10,
+        "height": 11
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 0.9997036562637373,
+      "lightCompensated": false
+    },
+    {
+      "id": 13,
+      "type": "car",
+      "roi": [
+        0.08246364813022539,
+        0.1408450704225352,
+        0.01194043773831318,
+        0.014603082411997757
+      ],
+      "pixels": {
+        "x": 115,
+        "y": 111,
+        "width": 17,
+        "height": 11
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0005501086989246,
+      "lightCompensated": false
+    },
+    {
+      "id": 14,
+      "type": "car",
+      "roi": [
+        0.6623211557970591,
+        0.26032483561160774,
+        0.009701605662379507,
+        0.025223505984359764
+      ],
+      "pixels": {
+        "x": 927,
+        "y": 205,
+        "width": 14,
+        "height": 20
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0002648320221925,
+      "lightCompensated": false
+    },
+    {
+      "id": 15,
+      "type": "car",
+      "roi": [
+        0.5667976538905537,
+        0.2324462237341575,
+        0.008955328303734892,
+        0.02256840009126929
+      ],
+      "pixels": {
+        "x": 794,
+        "y": 183,
+        "width": 13,
+        "height": 18
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0003052598642346,
+      "lightCompensated": false
+    },
+    {
+      "id": 16,
+      "type": "car",
+      "roi": [
+        0.529483785958325,
+        0.21386048248252398,
+        0.01044788302102404,
+        0.021240847144724018
+      ],
+      "pixels": {
+        "x": 741,
+        "y": 168,
+        "width": 15,
+        "height": 17
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0002778467816278,
+      "lightCompensated": false
+    },
+    {
+      "id": 17,
+      "type": "car",
+      "roi": [
+        0.48097575764642775,
+        0.20589516480325248,
+        0.007462773586445743,
+        0.014603082411997757
+      ],
+      "pixels": {
+        "x": 673,
+        "y": 162,
+        "width": 10,
+        "height": 11
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0008676368920717,
+      "lightCompensated": false
+    },
+    {
+      "id": 18,
+      "type": "car",
+      "roi": [
+        0.4399305029209762,
+        0.19129208239125473,
+        0.008955328303734892,
+        0.018585741251633505
+      ],
+      "pixels": {
+        "x": 616,
+        "y": 151,
+        "width": 13,
+        "height": 15
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0002159661189423,
+      "lightCompensated": false
+    },
+    {
+      "id": 19,
+      "type": "car",
+      "roi": [
+        0.39813897083688005,
+        0.17934410587234748,
+        0.007462773586445743,
+        0.017258188305088233
+      ],
+      "pixels": {
+        "x": 557,
+        "y": 141,
+        "width": 10,
+        "height": 14
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 0.9998745995230341,
+      "lightCompensated": false
+    },
+    {
+      "id": 20,
+      "type": "car",
+      "roi": [
+        0.3623176576219405,
+        0.16872368229998547,
+        0.008955328303734852,
+        0.015930635358542996
+      ],
+      "pixels": {
+        "x": 507,
+        "y": 133,
+        "width": 13,
+        "height": 13
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 0.9996498162649207,
+      "lightCompensated": false
+    },
+    {
+      "id": 26,
+      "type": "car",
+      "roi": [
+        0.24664466703203158,
+        0.14482772926217094,
+        0.007462773586445743,
+        0.014603082411997757
+      ],
+      "pixels": {
+        "x": 345,
+        "y": 114,
+        "width": 10,
+        "height": 11
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0002954459122948,
+      "lightCompensated": false
+    },
+    {
+      "id": 29,
+      "type": "car",
+      "roi": [
+        0.19888291607877887,
+        0.12889709390362794,
+        0.007462773586445743,
+        0.01327552946545252
+      ],
+      "pixels": {
+        "x": 278,
+        "y": 101,
+        "width": 10,
+        "height": 10
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0006567757363467,
+      "lightCompensated": false
+    },
+    {
+      "id": 32,
+      "type": "car",
+      "roi": [
+        0.03097051038374981,
+        0.23377377668070276,
+        0.009701605662379455,
+        0.014603082411997757
+      ],
+      "pixels": {
+        "x": 43,
+        "y": 184,
+        "width": 14,
+        "height": 11
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.000356102767732,
+      "lightCompensated": false
+    },
+    {
+      "id": 33,
+      "type": "car",
+      "roi": [
+        0.039179561328840116,
+        0.288203447489058,
+        0.011194160379668609,
+        0.013275529465452483
+      ],
+      "pixels": {
+        "x": 55,
+        "y": 227,
+        "width": 16,
+        "height": 10
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0002713345995615,
+      "lightCompensated": false
+    },
+    {
+      "id": 34,
+      "type": "car",
+      "roi": [
+        0.21679357268624866,
+        0.14881038810180672,
+        0.01044788302102404,
+        0.01460308241199774
+      ],
+      "pixels": {
+        "x": 304,
+        "y": 117,
+        "width": 15,
+        "height": 11
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0008601038745892,
+      "lightCompensated": false
+    },
+    {
+      "id": 35,
+      "type": "car",
+      "roi": [
+        0.235450506652363,
+        0.1514654939948972,
+        0.008209050945090278,
+        0.01327552946545252
+      ],
+      "pixels": {
+        "x": 330,
+        "y": 119,
+        "width": 11,
+        "height": 10
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0003918585621097,
+      "lightCompensated": false
+    },
+    {
+      "id": 36,
+      "type": "car",
+      "roi": [
+        0.34142189157989244,
+        0.17137878819307595,
+        0.008209050945090317,
+        0.018585741251633543
+      ],
+      "pixels": {
+        "x": 478,
+        "y": 135,
+        "width": 11,
+        "height": 15
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0009470810070722,
+      "lightCompensated": false
+    },
+    {
+      "id": 37,
+      "type": "car",
+      "roi": [
+        0.3123170745927541,
+        0.16474102346034972,
+        0.008955328303734892,
+        0.014603082411997757
+      ],
+      "pixels": {
+        "x": 437,
+        "y": 130,
+        "width": 13,
+        "height": 11
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.000231643033621,
+      "lightCompensated": false
+    },
+    {
+      "id": 38,
+      "type": "car",
+      "roi": [
+        0.30112291421308546,
+        0.1594308116741687,
+        0.007462773586445743,
+        0.01327552946545252
+      ],
+      "pixels": {
+        "x": 422,
+        "y": 125,
+        "width": 10,
+        "height": 10
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 0.9999840181553755,
+      "lightCompensated": false
+    },
+    {
+      "id": 39,
+      "type": "car",
+      "roi": [
+        0.28022714817103744,
+        0.15677570578107822,
+        0.0074627735864457026,
+        0.01725818830508825
+      ],
+      "pixels": {
+        "x": 392,
+        "y": 123,
+        "width": 10,
+        "height": 14
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.0010411251030211,
+      "lightCompensated": false
+    },
+    {
+      "id": 40,
+      "type": "car",
+      "roi": [
+        0.26157021420492305,
+        0.1541205998879877,
+        0.007462773586445743,
+        0.013275529465452502
+      ],
+      "pixels": {
+        "x": 366,
+        "y": 121,
+        "width": 10,
+        "height": 10
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 0.9998136887925341,
+      "lightCompensated": false
+    },
+    {
+      "id": 41,
+      "type": "car",
+      "roi": [
+        0.08694131228209284,
+        0.6917795432388143,
+        0.029104816987138366,
+        0.023895953037814492
+      ],
+      "pixels": {
+        "x": 122,
+        "y": 544,
+        "width": 41,
+        "height": 19
+      },
+      "occupied": true,
+      "diffRatio": 0.034722222222222224,
+      "edgeRatio": 0.08108108108108109,
+      "structuralRatio": 0,
+      "combinedScore": 0.03877627627627628,
+      "brightnessRatio": 1.0002884147403965,
+      "lightCompensated": false
+    },
+    {
+      "id": 43,
+      "type": "car",
+      "roi": [
+        0.7697850954418777,
+        0.2629799415046983,
+        0.013432992455602418,
+        0.019913294198178742
+      ],
+      "pixels": {
+        "x": 1078,
+        "y": 207,
+        "width": 19,
+        "height": 16
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0,
+      "combinedScore": 0,
+      "brightnessRatio": 1.000220499765282,
+      "lightCompensated": false
+    },
+    {
+      "id": 44,
+      "type": "car",
+      "roi": [
+        0.6227684557888967,
+        0.9559625796013191,
+        0.030597371704427508,
+        0.03053371777054079
+      ],
+      "pixels": {
+        "x": 872,
+        "y": 752,
+        "width": 43,
+        "height": 24
+      },
+      "occupied": false,
+      "diffRatio": 0,
+      "edgeRatio": 0,
+      "structuralRatio": 0.00496031746031746,
+      "combinedScore": 0.001488095238095238,
+      "brightnessRatio": 0.9998780722946227,
+      "lightCompensated": false
+    }
+  ]
+}
