@@ -1,6 +1,6 @@
 # MFU Smart Parking - สรุปสถานะโปรเจกต์
 
-อัปเดตล่าสุด: 2026-04-06
+อัปเดตล่าสุด: 2026-04-07
 
 ## 1) ขอบเขตงานที่ทำเสร็จแล้ว (Current Scope)
 
@@ -70,7 +70,19 @@ Endpoint ที่ทำแล้ว:
 - การแสดง preview ของ background และ snapshot
 - ใช้ snapshot เป็นภาพหลักเมื่อมีไฟล์ (fallback เป็น background)
 
-### D. Processing/Calibration Engine Integration
+### D. Camera Management UI (อัปเดตล่าสุด)
+
+ฟีเจอร์ที่เพิ่มเข้ามาในหน้า Camera List:
+
+- เปลี่ยนรูปแบบแสดงผลจาก card list เป็น table view
+- รองรับการ filter ตามโซนจาก dropdown
+- เพิ่มปุ่ม Export CSV สำหรับข้อมูลกล้องที่กำลังแสดง
+- เพิ่ม Import CSV เพื่อสร้างกล้องแบบ bulk
+- ตรวจสอบคอลัมน์บังคับตอน import (zoneCode, code, name)
+- map zoneCode -> zoneId อัตโนมัติก่อนบันทึก
+- แสดงสรุปผล import (จำนวนสำเร็จ/ล้มเหลว และแถวที่ผิดพลาด)
+
+### E. Processing/Calibration Engine Integration
 
 service หลักฝั่ง backend ที่เชื่อมแล้ว:
 
@@ -124,6 +136,11 @@ service หลักฝั่ง backend ที่เชื่อมแล้ว
   - ลบโฟลเดอร์ .next
   - รัน dev/build ใหม่
 
+หมายเหตุเพิ่มเติมจากรอบอัปเดตล่าสุด:
+
+- มีการ validate build ผ่านแล้วหลังเคลียร์ .next cache
+- หากเจอไฟล์ build artifacts จำนวนมากใน git status ให้ลบ .next ก่อนตรวจ diff
+
 ## 7) งานที่แนะนำให้ทำต่อ (Next Steps)
 
 Backlog ที่ควรทำต่อ:
@@ -138,3 +155,5 @@ Backlog ที่ควรทำต่อ:
 ## 8) สรุปภาพรวม
 
 Calibration Admin Module ตอนนี้สามารถใช้งานแบบ end-to-end ได้แล้ว ตั้งแต่การตั้งค่า zone/camera, การวาดและปรับ slot, การ run test, ไปจนถึง export config JSON สำหรับ runtime โดยมีโครงสร้างสถาปัตยกรรมและ API ที่พร้อมต่อยอดในเฟสถัดไป
+
+อัปเดตรอบล่าสุดเน้นด้าน Admin Usability โดยเฉพาะหน้า Camera List ให้จัดการข้อมูลกล้องได้ง่ายขึ้นในรูปแบบตาราง และรองรับการแลกเปลี่ยนข้อมูลด้วย CSV สำหรับงานเพิ่ม/ย้ายข้อมูลจำนวนมาก.

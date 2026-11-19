@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +29,8 @@ export function CameraManager() {
   const [zones, setZones] = useState<ZoneItem[]>([]);
   const [cameras, setCameras] = useState<CameraItem[]>([]);
   const [selectedZone, setSelectedZone] = useState<string>("");
+  const [isImporting, setIsImporting] = useState(false);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
   const [form, setForm] = useState({
     zoneId: "",
     code: "",
@@ -98,6 +100,151 @@ export function CameraManager() {
       isActive: true,
     }));
     loadCameras(selectedZone || undefined);
+  }
+
+  function csvEscape(value: string): string {
+    if (/[",\n]/.test(value)) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+  }
+
+  function parseCsvLine(line: string): string[] {
+    const out: string[] = [];
+    let current = "";
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i += 1) {
+      const ch = line[i];
+      const next = line[i + 1];
+
+      if (ch === '"') {
+        if (inQuotes && next === '"') {
+          current += '"';
+          i += 1;
+        } else {
+          inQuotes = !inQuotes;
+        }
+        continue;
+      }
+
+      if (ch === "," && !inQuotes) {
+        out.push(current.trim());
+        current = "";
+        continue;
+      }
+
+      current += ch;
+    }
+
+    out.push(current.trim());
+    return out;
+  }
+
+  function exportCsv() {
+    const rows = cameras.map((camera) => {
+      const zone = zones.find((z) => z.id === camera.zoneId);
+      return [
+        zone?.code ?? "",
+        camera.code,
+        camera.name,
+        camera.streamUrl ?? "",
+        camera.isPrimary ? "true" : "false",
+        camera.isActive ? "true" : "false",
+      ];
+    });
+
+    const header = ["zoneCode", "code", "name", "streamUrl", "isPrimary", "isActive"];
+    const csv = [header, ...rows]
+      .map((cols) => cols.map((col) => csvEscape(col)).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = selectedZone ? "cameras-filtered.csv" : "cameras-all.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function importCsv(file: File) {
+    setIsImporting(true);
+    try {
+      const text = await file.text();
+      const lines = text
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+      if (lines.length < 2) {
+        alert("CSV is empty");
+        return;
+      }
+
+      const header = parseCsvLine(lines[0]);
+      const index = new Map(header.map((name, idx) => [name, idx]));
+      const required = ["zoneCode", "code", "name"];
+      const missing = required.filter((name) => !index.has(name));
+      if (missing.length) {
+        alert(`CSV missing required columns: ${missing.join(", ")}`);
+        return;
+      }
+
+      let success = 0;
+      let failed = 0;
+      const failures: string[] = [];
+
+      for (let lineNo = 1; lineNo < lines.length; lineNo += 1) {
+        const cols = parseCsvLine(lines[lineNo]);
+        const zoneCode = cols[index.get("zoneCode") ?? -1]?.trim();
+        const code = cols[index.get("code") ?? -1]?.trim();
+        const name = cols[index.get("name") ?? -1]?.trim();
+        const streamUrl = cols[index.get("streamUrl") ?? -1]?.trim();
+        const isPrimaryRaw = cols[index.get("isPrimary") ?? -1]?.trim().toLowerCase();
+        const isActiveRaw = cols[index.get("isActive") ?? -1]?.trim().toLowerCase();
+
+        const zone = zones.find((z) => z.code.toLowerCase() === (zoneCode ?? "").toLowerCase());
+        if (!zone || !code || !name) {
+          failed += 1;
+          failures.push(`line ${lineNo + 1}`);
+          continue;
+        }
+
+        const res = await fetch("/api/admin/cameras", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            zoneId: zone.id,
+            code,
+            name,
+            streamUrl: streamUrl || null,
+            isPrimary: isPrimaryRaw === "true" || isPrimaryRaw === "1" || isPrimaryRaw === "yes",
+            isActive:
+              isActiveRaw === "false" || isActiveRaw === "0" || isActiveRaw === "no" ? false : true,
+          }),
+        });
+
+        if (res.ok) {
+          success += 1;
+        } else {
+          failed += 1;
+          failures.push(`line ${lineNo + 1}`);
+        }
+      }
+
+      await loadCameras(selectedZone || undefined);
+      alert(
+        `CSV import completed. success=${success}, failed=${failed}${
+          failures.length ? ` (${failures.join(", ")})` : ""
+        }`,
+      );
+    } finally {
+      setIsImporting(false);
+      if (importInputRef.current) {
+        importInputRef.current.value = "";
+      }
+    }
   }
 
   return (
@@ -178,9 +325,9 @@ export function CameraManager() {
       <Card>
         <CardHeader>
           <CardTitle>Camera List</CardTitle>
-          <div className="pt-2">
+          <div className="flex flex-wrap items-center gap-2 pt-2">
             <select
-              className="h-10 w-80 rounded-md border border-slate-300 bg-white px-3 text-sm"
+              className="h-10 w-72 rounded-md border border-slate-300 bg-white px-3 text-sm"
               value={selectedZone}
               onChange={(e) => setSelectedZone(e.target.value)}
             >
@@ -191,27 +338,66 @@ export function CameraManager() {
                 </option>
               ))}
             </select>
+
+            <Button size="sm" variant="outline" onClick={exportCsv}>
+              Export CSV
+            </Button>
+
+            <label className="inline-flex items-center gap-2 text-xs text-slate-600">
+              Import CSV
+              <Input
+                ref={importInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="h-9 w-56"
+                disabled={isImporting}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void importCsv(file);
+                }}
+              />
+            </label>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {cameras.map((camera) => (
-              <div key={camera.id} className="rounded-md border border-slate-200 bg-white p-4 text-sm">
-                <p className="font-semibold text-tertiary">
-                  {camera.code} · {camera.name}
-                </p>
-                <p className="text-slate-600">Zone: {zoneMap.get(camera.zoneId) || camera.zoneId}</p>
-                <p className="text-slate-600">{camera.streamUrl || "No stream URL"}</p>
-                <div className="mt-3 flex items-center justify-between">
-                  <p className="text-xs text-slate-500">
-                    {camera.isPrimary ? "Primary" : "Secondary"} · {camera.isActive ? "Active" : "Inactive"}
-                  </p>
-                  <Button asChild size="sm" variant="tertiary">
-                    <Link href={`/admin/cameras/${camera.id}/calibration`}>Open Calibration</Link>
-                  </Button>
-                </div>
-              </div>
-            ))}
+          <div className="overflow-auto rounded-md border border-slate-200">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-100 text-slate-700">
+                <tr>
+                  <th className="px-3 py-2 text-left">Zone</th>
+                  <th className="px-3 py-2 text-left">Camera Code</th>
+                  <th className="px-3 py-2 text-left">Camera Name</th>
+                  <th className="px-3 py-2 text-left">Stream URL</th>
+                  <th className="px-3 py-2 text-left">Primary</th>
+                  <th className="px-3 py-2 text-left">Active</th>
+                  <th className="px-3 py-2 text-left">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cameras.map((camera) => (
+                  <tr key={camera.id} className="border-t border-slate-200">
+                    <td className="px-3 py-2">{zoneMap.get(camera.zoneId) || camera.zoneId}</td>
+                    <td className="px-3 py-2 font-medium text-tertiary">{camera.code}</td>
+                    <td className="px-3 py-2">{camera.name}</td>
+                    <td className="px-3 py-2">{camera.streamUrl || "-"}</td>
+                    <td className="px-3 py-2">{camera.isPrimary ? "Yes" : "No"}</td>
+                    <td className="px-3 py-2">{camera.isActive ? "Yes" : "No"}</td>
+                    <td className="px-3 py-2">
+                      <Button asChild size="sm" variant="tertiary">
+                        <Link href={`/admin/cameras/${camera.id}/calibration`}>Open Calibration</Link>
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+                {!cameras.length ? (
+                  <tr>
+                    <td className="px-3 py-3 text-slate-500" colSpan={7}>
+                      No cameras found.
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>
