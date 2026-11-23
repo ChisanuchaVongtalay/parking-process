@@ -77,6 +77,7 @@ export function CalibrationWorkspace({
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [isDrawMode, setIsDrawMode] = useState(true);
   const [isTesting, setIsTesting] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
   const [isUploadingBackground, setIsUploadingBackground] = useState(false);
   const [isUploadingSnapshot, setIsUploadingSnapshot] = useState(false);
   const [imageNaturalSize, setImageNaturalSize] = useState<{ width: number; height: number } | null>(
@@ -93,6 +94,10 @@ export function CalibrationWorkspace({
   const resultMap = useMemo(() => {
     return new Map((testResult?.slots ?? []).map((item) => [item.slotId, item]));
   }, [testResult]);
+
+  useEffect(() => {
+    setTestResult(null);
+  }, [slots, calibration]);
 
   const mainImagePath = camera.latestSnapshotPath ?? camera.backgroundImagePath;
   const backgroundImageUrl = toFileUrl(camera.backgroundImagePath);
@@ -268,6 +273,7 @@ export function CalibrationWorkspace({
         alert(`Background upload failed: ${await parseErrorMessage(res)}`);
         return;
       }
+      setTestResult(null);
       await refreshCamera();
 
       // Allow selecting the same file again and avoid stale browser file label confusion.
@@ -292,6 +298,7 @@ export function CalibrationWorkspace({
         alert(`Snapshot upload failed: ${await parseErrorMessage(res)}`);
         return;
       }
+      setTestResult(null);
       await refreshCamera();
 
       if (snapshotInputRef.current) {
@@ -372,12 +379,13 @@ export function CalibrationWorkspace({
     });
 
     if (!res.ok) {
-      alert("Saving slots failed");
-      return;
+      alert(`Saving slots failed: ${await parseErrorMessage(res)}`);
+      return false;
     }
 
     const json = await res.json();
     setSlots(json.data ?? []);
+    return true;
   }
 
   async function saveCalibration() {
@@ -388,8 +396,32 @@ export function CalibrationWorkspace({
     });
 
     if (!res.ok) {
-      alert("Calibration save failed");
+      alert(`Calibration save failed: ${await parseErrorMessage(res)}`);
+      return false;
+    }
+    return true;
+  }
+
+  async function saveAndStartCounting() {
+    if (!camera.backgroundImagePath || !slots.some((slot) => slot.enabled)) {
+      alert("Please set a background and enable at least one slot first.");
       return;
+    }
+    setIsActivating(true);
+    try {
+      if (!(await saveSlots()) || !(await saveCalibration())) return;
+      const response = await fetch(`/api/runtime/cameras/${camera.id}/process`, {
+        method: "POST", headers: { "content-type": "application/json" }, body: "{}",
+      });
+      if (!response.ok) {
+        alert(`Settings saved. Counting will run on the next successful snapshot. Current snapshot could not be processed: ${await parseErrorMessage(response)}`);
+        return;
+      }
+      alert("Settings saved and latest snapshot processed. New snapshots will be counted automatically while the worker is running.");
+    } catch {
+      alert("Could not complete the request. Check the connection and try again.");
+    } finally {
+      setIsActivating(false);
     }
   }
 
@@ -404,7 +436,7 @@ export function CalibrationWorkspace({
         "slots",
         JSON.stringify({
           slots: slots.map((slot) => ({
-            id: slot.id.startsWith("tmp-") ? undefined : slot.id,
+            id: slot.id,
             logicalSlotId: slot.logicalSlotId,
             slotCode: slot.slotCode,
             vehicleType: slot.vehicleType,
@@ -639,8 +671,8 @@ export function CalibrationWorkspace({
               const status = resultMap.get(slot.id);
               const strokeClass = status
                 ? status.occupied
-                  ? "border-primary bg-primary/20"
-                  : "border-success bg-success/20"
+                  ? "border-red-500 bg-red-500/20"
+                  : "border-green-500 bg-green-500/20"
                 : slot.vehicleType === "car"
                   ? "border-tertiary bg-tertiary/20"
                   : "border-secondary bg-secondary/25";
@@ -704,7 +736,7 @@ export function CalibrationWorkspace({
                   }`}
                 >
                   <div className="absolute left-1 top-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] text-white">
-                    {slot.slotCode}
+                    {slot.slotCode}{status ? (status.occupied ? " · Occupied" : " · Free") : ""}
                   </div>
                 </Rnd>
               );
@@ -833,6 +865,9 @@ export function CalibrationWorkspace({
               Export Config
             </Button>
           </div>
+          <Button size="sm" disabled={isActivating} onClick={saveAndStartCounting}>
+            {isActivating ? "Saving..." : "Save & Start Counting"}
+          </Button>
           <label className="text-xs text-slate-600">
             Test with one-time snapshot
             <Input

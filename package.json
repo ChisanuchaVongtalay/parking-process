@@ -12,7 +12,9 @@
     "db:migrate": "tsx src/db/migrate.ts",
     "db:migrate:prod": "node src/db/migrate.js",
     "db:seed": "tsx src/db/seed.ts",
-    "processor:start": "node src/server.js"
+    "processor:start": "node src/server.js",
+    "worker:snapshot": "tsx workers/snapshot/index.ts",
+    "test:snapshot": "tsx --test workers/snapshot/*.test.ts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",

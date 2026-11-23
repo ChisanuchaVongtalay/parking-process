@@ -24,13 +24,24 @@ export async function runRuntimeProcessing(args: {
     throw new Error("Snapshot path not available");
   }
 
+  let effectiveCapturedAt = capturedAt;
+  if (!snapshotPath && effectiveSnapshotPath === `snapshots/${cameraId}/latest.jpg`) {
+    const status = db.$client.prepare("SELECT last_success_at FROM snapshot_capture_status WHERE camera_id = ?").get(cameraId) as { last_success_at: number | null } | undefined;
+    const configuredAge = Number(process.env.SNAPSHOT_MAX_AGE_SECONDS || 900);
+    const maxAge = Number.isFinite(configuredAge) && configuredAge > 0 ? configuredAge : 900;
+    if (!status?.last_success_at || Date.now() - status.last_success_at > maxAge * 1000) {
+      throw new Error("Latest snapshot is stale or has no capture timestamp");
+    }
+    effectiveCapturedAt = new Date(status.last_success_at);
+  }
+
   const config = await loadCameraConfig(cameraId);
   const result = await processCameraSnapshot(config, resolveDataPath(effectiveSnapshotPath));
   const saved = await saveProcessingResult({
     cameraId,
     snapshotPath: effectiveSnapshotPath,
     result,
-    capturedAt,
+    capturedAt: effectiveCapturedAt,
   });
 
   return {

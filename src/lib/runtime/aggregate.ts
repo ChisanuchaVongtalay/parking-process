@@ -1,5 +1,8 @@
 import { db } from "@/db";
 
+const maxAgeSeconds = Number(process.env.SNAPSHOT_MAX_AGE_SECONDS || 900);
+const freshnessCutoff = () => Date.now() - (Number.isFinite(maxAgeSeconds) && maxAgeSeconds > 0 ? maxAgeSeconds : 900) * 1000;
+
 export type ZoneSummary = {
   total: number;
   occupied: number;
@@ -52,7 +55,7 @@ export async function getCameraLatestSummary(
         co.snapshot_path AS snapshotPath
       FROM camera_observations co
       INNER JOIN cameras c ON c.id = co.camera_id
-      WHERE co.camera_id = ?
+      WHERE co.camera_id = ? AND co.captured_at >= ${freshnessCutoff()}
       ORDER BY co.captured_at DESC
       LIMIT 1
     `,
@@ -93,7 +96,7 @@ export async function getLatestCameraSummaries(zoneId?: string): Promise<PublicC
       WITH latest_per_camera AS (
         SELECT c.id AS camera_id, MAX(co.captured_at) AS max_captured_at
         FROM cameras c
-        LEFT JOIN camera_observations co ON co.camera_id = c.id
+        LEFT JOIN camera_observations co ON co.camera_id = c.id AND co.captured_at >= ${freshnessCutoff()}
         ${zoneId ? "WHERE c.zone_id = ?" : ""}
         GROUP BY c.id
       )
@@ -147,7 +150,7 @@ export async function getZonesWithLatestSummary(): Promise<PublicZoneSummaryRow[
       WITH latest_per_camera AS (
         SELECT c.id AS camera_id, MAX(co.captured_at) AS max_captured_at
         FROM cameras c
-        LEFT JOIN camera_observations co ON co.camera_id = c.id
+        LEFT JOIN camera_observations co ON co.camera_id = c.id AND co.captured_at >= ${freshnessCutoff()}
         GROUP BY c.id
       ),
       latest_observations AS (
@@ -213,7 +216,7 @@ export async function getCameraLatestSlotObservations(
       WITH latest_observation AS (
         SELECT co.id AS observation_id, co.captured_at AS captured_at
         FROM camera_observations co
-        WHERE co.camera_id = ?
+        WHERE co.camera_id = ? AND co.captured_at >= ${freshnessCutoff()}
         ORDER BY co.captured_at DESC
         LIMIT 1
       )
@@ -253,7 +256,7 @@ export async function getZoneSummary(zoneId: string): Promise<ZoneSummary | null
       WITH latest_per_camera AS (
         SELECT c.id AS camera_id, MAX(co.captured_at) AS max_captured_at
         FROM cameras c
-        LEFT JOIN camera_observations co ON co.camera_id = c.id
+        LEFT JOIN camera_observations co ON co.camera_id = c.id AND co.captured_at >= ${freshnessCutoff()}
         WHERE c.zone_id = ?
         GROUP BY c.id
       ),

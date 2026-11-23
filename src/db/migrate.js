@@ -3,7 +3,7 @@ import path from "node:path";
 
 import Database from "better-sqlite3";
 
-const dbPath = path.join(process.cwd(), "data", "sqlite", "parking.db");
+const dbPath = path.join(path.resolve(process.env.DATA_DIR || path.join(process.cwd(), "data")), "sqlite", "parking.db");
 const migrationDir = path.join(process.cwd(), "drizzle");
 
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });

@@ -50,3 +50,19 @@ Import `n8n/parking_flow.json` into n8n. It demonstrates:
 - Snapshot is auto-resized to match background size.
 - Backgrounds and binary masks for slot polygons are cached in memory for speed.
 - Thresholds can be tuned via env vars: `THRESH_DIFF`, `THRESH_PIXELS`.
+
+## RTSP snapshot worker
+
+The worker runs separately from the web app. It captures one JPEG from each active camera with an RTSP URL every minute by default, stores it under `data/snapshots/<camera-id>/latest.jpg`, then runs the existing processor using the camera's saved slots, calibration and background from the database. Save the slots and calibration first; an unconfigured camera can still capture but processing will fail until the configuration is ready. Exporting JSON is optional. The worker never replaces the calibration background.
+
+Install FFmpeg and Node dependencies, then run:
+
+```sh
+npm ci
+npm run db:migrate
+npm run worker:snapshot
+```
+
+Set the options in `.env.example` in the process environment (the worker does not automatically load `.env` files). `DATA_DIR` must point to the same persistent directory for the web app, migration, and worker. Set `SNAPSHOT_INTERVAL_SECONDS` (default 60), `SNAPSHOT_TIMEOUT_SECONDS` (20), `SNAPSHOT_CONCURRENCY` (4), and `SNAPSHOT_RTSP_TRANSPORT` (`tcp` or `udp`) as needed. `SNAPSHOT_MAX_AGE_SECONDS` defaults to 900 seconds and should be set on the web app; observations older than this are excluded from current public summaries. Zone totals may therefore be incomplete when cameras are offline. Capture timestamps and failures are stored in `snapshot_capture_status`.
+
+Run only one worker instance against a given set of cameras and shared storage. The local adapter requires a shared persistent volume if processes run on different hosts; remote storage is not implemented. If capture fails, check FFmpeg availability, network access to the camera, the RTSP URL and camera status. Avoid sharing RTSP credentials and restrict access to the admin application and CCTV footage. For local verification run `npm run test:snapshot`.

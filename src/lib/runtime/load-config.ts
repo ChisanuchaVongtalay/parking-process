@@ -1,11 +1,13 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { desc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { configExports } from "@/db/schema";
+import { cameras, zones } from "@/db/schema";
+import { getOrCreateCalibration } from "@/services/calibration";
+import { listCameraSlots } from "@/services/camera-slots";
 import { resolveDataPath } from "@/lib/storage";
 
 const pointTupleSchema = z.tuple([z.number(), z.number()]);
@@ -147,15 +149,31 @@ export async function loadCameraConfig(input: string): Promise<RuntimeCameraConf
     return toRuntimeConfig(doc);
   }
 
-  const latestExport = await db.query.configExports.findFirst({
-    where: eq(configExports.cameraId, input),
-    orderBy: [desc(configExports.createdAt)],
-  });
-
-  if (!latestExport) {
-    throw new Error(`No exported config found for camera ${input}`);
-  }
-
-  const doc = await readExportFile(latestExport.exportPath);
-  return toRuntimeConfig(doc, input);
+  const camera = await db.query.cameras.findFirst({ where: eq(cameras.id, input) });
+  if (!camera) throw new Error(`Camera not found: ${input}`);
+  if (!camera.backgroundImagePath) throw new Error("Background image is missing");
+  const zone = await db.query.zones.findFirst({ where: eq(zones.id, camera.zoneId) });
+  if (!zone) throw new Error("Camera zone not found");
+  const [calibration, slots] = await Promise.all([
+    getOrCreateCalibration(camera.id), listCameraSlots(camera.id),
+  ]);
+  const enabledSlots = slots.filter((slot) => slot.enabled);
+  if (!enabledSlots.length) throw new Error("No enabled parking slots configured");
+  return {
+    version: 1,
+    exportedAt: camera.updatedAt.toISOString(),
+    zone: { id: zone.id, name: zone.name },
+    camera: {
+      id: camera.id,
+      isPrimary: camera.isPrimary,
+      backgroundImagePath: camera.backgroundImagePath,
+      backgroundAbsolutePath: resolveDataPath(camera.backgroundImagePath),
+      calibration,
+      slots: enabledSlots.map((slot) => ({
+        cameraSlotId: slot.id, logicalSlotId: slot.logicalSlotId,
+        slotCode: slot.slotCode, vehicleType: slot.vehicleType,
+        shapeType: slot.shapeType, points: slot.points,
+      })),
+    },
+  };
 }

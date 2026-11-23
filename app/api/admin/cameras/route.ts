@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { calibrationProfiles, cameras } from "@/db/schema";
@@ -38,9 +38,9 @@ export async function POST(request: Request) {
       updatedAt: now,
     };
 
-    await db.transaction(async (tx) => {
-      await tx.insert(cameras).values(item);
-      await tx.insert(calibrationProfiles).values({
+    db.transaction((tx) => {
+      tx.insert(cameras).values(item).run();
+      tx.insert(calibrationProfiles).values({
         id: createId("cal"),
         cameraId: item.id,
         pixelThreshold: 15,
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         edgeWeight: 1500,
         createdAt: now,
         updatedAt: now,
-      });
+      }).run();
     });
 
     return ok(item, 201);

@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const STORAGE_ROOT = path.join(process.cwd(), "data");
+const STORAGE_ROOT = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), "data"));
 const backgroundsDir = path.join(STORAGE_ROOT, "backgrounds");
 const snapshotsDir = path.join(STORAGE_ROOT, "snapshots");
 const exportsDir = path.join(STORAGE_ROOT, "exports");
