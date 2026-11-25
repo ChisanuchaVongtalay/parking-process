@@ -1,23 +1,41 @@
 import { requireAdminPage } from "@/lib/auth/session";
-import { DataTable, EmptyState, Notice, PageHeading, Panel, Status } from "@/components/admin/admin-ui";
-import { Button } from "@/components/ui/button";
+import { DataTable, Notice, PageHeading, Panel, Status } from "@/components/admin/admin-ui";
+import { BookingPolicyForm } from "@/components/admin/booking-policy-form";
+import { adminTime } from "@/lib/admin-time";
+import { getEffectivePolicy, getPolicies } from "@/services/booking-policies";
 
 export default async function Policies() {
-  await requireAdminPage();
+  const session = await requireAdminPage();
+  const [policies, current] = await Promise.all([getPolicies(), getEffectivePolicy()]);
+  const latest = policies[0];
   return <>
-    <PageHeading title="Policy Management" description="กำหนดนโยบายการจองตามกลุ่มผู้ใช้และวันที่มีผล"
-      actions={<><Button variant="outline" disabled>Preview changes</Button><Button disabled>Publish policy</Button></>} />
-    <Notice title="Demo only · Booking Service not connected">กฎที่แสดงเป็นตัวอย่างและยังไม่มีผลบังคับใช้</Notice>
+    <PageHeading title="Policy Management" description="ตั้งกฎการจองและเผยแพร่เวอร์ชันสำหรับ Booking Service" />
+    <Notice title={current ? `นโยบายที่มีผล · v${current.version}` : "ยังไม่มีนโยบายที่มีผล"}>
+      Booking Service สามารถอ่านนโยบายผ่าน API และเป็นผู้บังคับใช้กับการจอง
+    </Notice>
     <div className="admin-grid wide">
-      <Panel title="Role-based booking limits" detail="ตัวอย่าง Draft">
-        <DataTable headings={["Role", "Active reservations", "Max duration", "Status"]}>
-          <tr><td>Student</td><td>1</td><td>2 ชั่วโมง</td><td><Status tone="warn">Demo</Status></td></tr>
-          <tr><td>Staff</td><td>2</td><td>4 ชั่วโมง</td><td><Status tone="warn">Demo</Status></td></tr>
-        </DataTable>
-      </Panel>
-      <Panel title="Policy configuration"><dl className="admin-fields"><div><dt>Version</dt><dd>Demo draft</dd></div><div><dt>Effective date</dt><dd>ยังไม่กำหนด</dd></div><div><dt>Approver</dt><dd>รอยืนยัน</dd></div></dl></Panel>
-      <Panel title="Change impact preview"><EmptyState title="Not connected">ต้องเชื่อม Booking Service เพื่อประเมินผลกระทบกับรายการจอง</EmptyState></Panel>
-      <Panel title="Audit & revision history"><EmptyState title="ยังไม่มีประวัตินโยบาย">ประวัติจะมาจาก Booking Service</EmptyState></Panel>
+      <div className="space-y-4">
+        <Panel title="ข้อจำกัดที่มีผลปัจจุบัน">
+          <DataTable headings={["กลุ่ม", "จองค้าง", "ระยะเวลาสูงสุด", "จองล่วงหน้า"]}>
+            {current ? (["student", "staff"] as const).map((role) => <tr key={role}>
+              <td>{role === "student" ? "นักศึกษา" : "บุคลากร"}</td><td>{current.policy[role].maxActive}</td>
+              <td>{current.policy[role].maxDurationHours} ชม.</td><td>{current.policy[role].advanceDays} วัน</td>
+            </tr>) : <tr><td colSpan={4}>ยังไม่มีข้อมูล</td></tr>}
+          </DataTable>
+        </Panel>
+        <Panel title="ประวัติการเผยแพร่">
+          <DataTable headings={["เวอร์ชัน", "วันที่มีผล", "ผู้เผยแพร่", "สถานะ"]}>
+            {policies.map((entry) => <tr key={entry.version}><td>v{entry.version}</td><td>{adminTime(entry.effectiveAt)}</td>
+              <td>{entry.updatedBy}</td><td><Status tone={current?.version === entry.version ? "good" : "neutral"}>
+                {current?.version === entry.version ? "มีผล" : entry.effectiveAt > Date.now() ? "รอวันที่มีผล" : "ย้อนหลัง"}
+              </Status></td></tr>)}
+            {!policies.length && <tr><td colSpan={4}>ยังไม่มีเวอร์ชันเผยแพร่</td></tr>}
+          </DataTable>
+        </Panel>
+      </div>
+      {session.role === "super_admin" && <Panel title="กำหนดเวอร์ชันใหม่">
+        <BookingPolicyForm version={latest?.version ?? 0} policy={latest?.policy} />
+      </Panel>}
     </div>
   </>;
 }

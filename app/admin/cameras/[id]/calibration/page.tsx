@@ -1,4 +1,4 @@
-import { requireParkingAdminPage } from "@/lib/auth/session";
+import { requireAdminPage } from "@/lib/auth/session";
 import { PageHeading } from "@/components/admin/admin-ui";
 
 import { eq } from "drizzle-orm";
@@ -15,16 +15,21 @@ export default async function CameraCalibrationPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireParkingAdminPage("/admin/cameras");
+  await requireAdminPage();
   const { id } = await params;
   const camera = await db.query.cameras.findFirst({ where: eq(cameras.id, id) });
   if (!camera) {
     notFound();
   }
 
-  const [slots, calibration] = await Promise.all([
+  const [slots, calibration, physicalSlots] = await Promise.all([
     listCameraSlots(camera.id),
     getOrCreateCalibration(camera.id),
+    db.query.logicalSlots.findMany({
+      where: (slots, { and, eq }) => and(eq(slots.zoneId, camera.zoneId), eq(slots.isActive, true)),
+      columns: { id: true, slotCode: true, vehicleType: true },
+      orderBy: (slots, { asc }) => [asc(slots.slotCode)],
+    }),
   ]);
 
   return (
@@ -33,7 +38,7 @@ export default async function CameraCalibrationPage({
         description="กำหนดขอบเขตช่องจอด ปรับ Pixel Difference และทดสอบก่อนเปิดนับช่อง"
         parent={{ href: `/admin/cameras/${camera.id}`, label: "Camera Detail" }} />
 
-      <CalibrationWorkspace
+      <CalibrationWorkspace physicalSlots={physicalSlots}
         initialCamera={{
           id: camera.id,
           code: camera.code,

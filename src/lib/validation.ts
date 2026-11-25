@@ -4,15 +4,15 @@ export const vehicleTypeSchema = z.enum(["car", "motorcycle"]);
 export const shapeTypeSchema = z.enum(["rect", "polygon"]);
 
 export const zoneCreateSchema = z.object({
-  code: z.string().min(1).max(32),
-  name: z.string().min(1).max(120),
+  code: z.string().trim().min(1).max(32),
+  name: z.string().trim().min(1).max(120),
   description: z.string().max(500).nullable().optional(),
 });
 
 export const cameraCreateSchema = z.object({
   zoneId: z.string().min(1),
-  code: z.string().min(1).max(64),
-  name: z.string().min(1).max(150),
+  code: z.string().trim().min(1).max(64),
+  name: z.string().trim().min(1).max(150),
   streamUrl: z.string().url().nullable().optional(),
   isPrimary: z.boolean().default(false),
   isActive: z.boolean().default(true),

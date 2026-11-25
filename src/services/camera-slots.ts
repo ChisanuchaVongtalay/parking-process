@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { cameraSlots } from "@/db/schema";
+import { cameras, cameraSlots, logicalSlots } from "@/db/schema";
 import { createId } from "@/lib/id";
 import { rectToPoints } from "@/lib/geometry";
 import type { CameraSlot, Point2D } from "@/types/domain";
@@ -51,50 +51,65 @@ export async function replaceCameraSlots(
     enabled: boolean;
   }>,
 ): Promise<CameraSlot[]> {
-  const existing = await listCameraSlots(cameraId);
-  const existingIds = new Set(existing.map((slot) => slot.id));
-  const incomingIds = new Set(slots.map((slot) => slot.id).filter(Boolean));
-
-  for (const prev of existingIds) {
-    if (!incomingIds.has(prev)) {
-      await db.delete(cameraSlots).where(and(eq(cameraSlots.cameraId, cameraId), eq(cameraSlots.id, prev)));
+  await db.transaction(async (transaction) => {
+    const camera = await transaction.query.cameras.findFirst({ where: eq(cameras.id, cameraId) });
+    if (!camera) throw new Error("Camera not found");
+    const physicalSlots = await transaction.query.logicalSlots.findMany({ where: eq(logicalSlots.zoneId, camera.zoneId) });
+    const typeById = new Map(physicalSlots.map((slot) => [slot.id, slot.vehicleType]));
+    const linked = new Set<string>();
+    for (const { logicalSlotId, vehicleType } of slots) {
+      if (!logicalSlotId) continue;
+      if (linked.has(logicalSlotId) || typeById.get(logicalSlotId) !== vehicleType) {
+        throw new Error("Logical slot mapping must be unique within the camera and match the zone and vehicle type");
+      }
+      linked.add(logicalSlotId);
     }
-  }
+    const existing = await transaction.query.cameraSlots.findMany({ where: eq(cameraSlots.cameraId, cameraId) });
+    const existingIds = new Set(existing.map((slot) => slot.id));
+    const incomingIds = new Set(slots.map((slot) => slot.id).filter(Boolean));
 
-  const now = new Date();
-  for (const slot of slots) {
-    const points = slot.points?.length ? slot.points : rectToPoints(slot.bbox);
-    if (slot.id && existingIds.has(slot.id)) {
-      await db
-        .update(cameraSlots)
-        .set({
-          logicalSlotId: slot.logicalSlotId ?? null,
-          slotCode: slot.slotCode,
-          vehicleType: slot.vehicleType,
-          shapeType: slot.shapeType,
-          pointsJson: JSON.stringify(points),
-          bboxJson: JSON.stringify(slot.bbox),
-          enabled: slot.enabled,
-          updatedAt: now,
-        })
-        .where(and(eq(cameraSlots.cameraId, cameraId), eq(cameraSlots.id, slot.id)));
-      continue;
+    for (const prev of existingIds) {
+      if (!incomingIds.has(prev)) {
+        await transaction.delete(cameraSlots).where(and(eq(cameraSlots.cameraId, cameraId), eq(cameraSlots.id, prev)));
+      }
     }
 
-    await db.insert(cameraSlots).values({
-      id: createId("cslot"),
-      cameraId,
-      logicalSlotId: slot.logicalSlotId ?? null,
-      slotCode: slot.slotCode,
-      vehicleType: slot.vehicleType,
-      shapeType: slot.shapeType,
-      pointsJson: JSON.stringify(points),
-      bboxJson: JSON.stringify(slot.bbox),
-      enabled: slot.enabled,
-      createdAt: now,
-      updatedAt: now,
-    });
-  }
+    const now = new Date();
+    for (const slot of slots) {
+      const points = slot.points?.length ? slot.points : rectToPoints(slot.bbox);
+      if (slot.id && existingIds.has(slot.id)) {
+        await transaction
+          .update(cameraSlots)
+          .set({
+            logicalSlotId: slot.logicalSlotId ?? null,
+            slotCode: slot.slotCode,
+            vehicleType: slot.vehicleType,
+            shapeType: slot.shapeType,
+            pointsJson: JSON.stringify(points),
+            bboxJson: JSON.stringify(slot.bbox),
+            enabled: slot.enabled,
+            updatedAt: now,
+          })
+          .where(and(eq(cameraSlots.cameraId, cameraId), eq(cameraSlots.id, slot.id)));
+        continue;
+      }
+
+      await transaction.insert(cameraSlots).values({
+        id: createId("cslot"),
+        cameraId,
+        logicalSlotId: slot.logicalSlotId ?? null,
+        slotCode: slot.slotCode,
+        vehicleType: slot.vehicleType,
+        shapeType: slot.shapeType,
+        pointsJson: JSON.stringify(points),
+        bboxJson: JSON.stringify(slot.bbox),
+        enabled: slot.enabled,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+  });
 
   return listCameraSlots(cameraId);
 }

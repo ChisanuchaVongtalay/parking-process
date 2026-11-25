@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import type { NextResponse } from "next/server";
 import type { Transaction } from "@libsql/client";
 
-import { authQuery, authRow, authWrite, isAuthOnlyDeployment } from "./database";
+import { authQuery, authRow, authWrite } from "./database";
 import type { AdminRole } from "./roles";
 
 const cookieName = "mfu_admin_session";
@@ -40,12 +40,6 @@ export async function requireAdminPage(role?: AdminRole) {
   if (!session) redirect("/login");
   if (session.mustChangePassword) redirect("/change-password");
   if (role === "super_admin" && session.role !== role) redirect("/admin");
-  return session;
-}
-
-export async function requireParkingAdminPage(listPath: string) {
-  const session = await requireAdminPage();
-  if (isAuthOnlyDeployment()) redirect(listPath);
   return session;
 }
 

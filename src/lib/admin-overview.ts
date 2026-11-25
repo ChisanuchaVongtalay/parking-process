@@ -1,12 +1,13 @@
+import { queryRow, queryRows } from "@/db/client";
 import { db } from "@/db";
 
 const configuredAge = Number(process.env.SNAPSHOT_MAX_AGE_SECONDS || 900);
 const maxAge = Number.isFinite(configuredAge) && configuredAge > 0 ? configuredAge : 900;
 export { adminTime } from "./admin-time";
 
-export function readParkingOverview() {
+export async function readParkingOverview() {
   const cutoff = Date.now() - maxAge * 1000;
-  const slots = db.$client.prepare(`
+  const slots = await queryRows(`
     WITH latest AS (
       SELECT id, camera_id, captured_at,
              ROW_NUMBER() OVER (PARTITION BY camera_id ORDER BY captured_at DESC, created_at DESC, id DESC) AS rank
@@ -22,15 +23,15 @@ export function readParkingOverview() {
     )
     SELECT ls.id, ls.zone_id AS zoneId, ls.slot_code AS code, ls.vehicle_type AS vehicleType,
            GROUP_CONCAT(DISTINCT m.code) AS cameras,
-           MIN(CASE WHEN m.is_active AND m.enabled AND m.captured_at >= @cutoff THEN m.occupied END) AS minOccupied,
-           MAX(CASE WHEN m.is_active AND m.enabled AND m.captured_at >= @cutoff THEN m.occupied END) AS maxOccupied,
+           MIN(CASE WHEN m.is_active AND m.enabled AND m.captured_at >= ? THEN m.occupied END) AS minOccupied,
+           MAX(CASE WHEN m.is_active AND m.enabled AND m.captured_at >= ? THEN m.occupied END) AS maxOccupied,
            MAX(CASE WHEN m.is_active AND m.enabled AND m.occupied IS NOT NULL THEN m.captured_at END) AS observedAt
     FROM logical_slots ls
     LEFT JOIN mapped m ON m.logical_slot_id = ls.id AND m.zone_id = ls.zone_id
     WHERE ls.is_active
     GROUP BY ls.id
     ORDER BY ls.display_order, ls.slot_code
-  `).all({ cutoff }) as Array<{
+  `, [cutoff, cutoff]) as Array<{
     id: string; zoneId: string; code: string; vehicleType: string; cameras: string | null;
     minOccupied: number | null; maxOccupied: number | null; observedAt: number | null;
   }>;
@@ -48,7 +49,7 @@ export function readParkingOverview() {
     slotsByZone.set(slot.zoneId, group);
   }
 
-  const zones = db.query.zones.findMany().sync().sort((a, b) => a.code.localeCompare(b.code)).map((zone) => {
+  const zones = (await db.query.zones.findMany()).sort((a, b) => a.code.localeCompare(b.code)).map((zone) => {
     const slots = slotsByZone.get(zone.id) ?? [];
     const free = slots.filter((slot) => slot.status === "Free").length;
     const occupied = slots.filter((slot) => slot.status === "Occupied").length;
@@ -66,22 +67,22 @@ export function readParkingOverview() {
   };
 }
 
-export function readCameraHealth() {
+export async function readCameraHealth() {
   // Older databases can lack capture telemetry until migration 0002 is applied.
-  const hasCaptureStatus = db.$client.prepare(
+  const hasCaptureStatus = await queryRow(
     "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'snapshot_capture_status'",
-  ).get();
+  );
   const captureSource = hasCaptureStatus
     ? "snapshot_capture_status"
     : "(SELECT NULL AS camera_id, NULL AS last_success_at, NULL AS last_error WHERE 0)";
-  const cameras = db.$client.prepare(`
+  const cameras = await queryRows(`
     SELECT c.id, c.code, c.name, c.zone_id AS zoneId, c.is_active AS active,
            s.last_success_at AS captureAt, (s.last_error IS NOT NULL) AS captureError,
            (SELECT MAX(o.created_at) FROM camera_observations o WHERE o.camera_id = c.id) AS processedAt
     FROM cameras c
     LEFT JOIN ${captureSource} s ON s.camera_id = c.id
     ORDER BY c.code
-  `).all() as Array<{
+  `) as Array<{
     id: string; code: string; name: string; zoneId: string; active: number;
     captureAt: number | null; captureError: number; processedAt: number | null;
   }>;

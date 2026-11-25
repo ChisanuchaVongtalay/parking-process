@@ -1,20 +1,50 @@
+import { query, queryRows, usesRemoteDatabase, writeTransaction } from "@/db/client";
+import type { Transaction } from "@libsql/client";
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 const STORAGE_ROOT = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), "data"));
-const backgroundsDir = path.join(STORAGE_ROOT, "backgrounds");
-const snapshotsDir = path.join(STORAGE_ROOT, "snapshots");
-const exportsDir = path.join(STORAGE_ROOT, "exports");
+export const CLOUD_FILE_LIMIT = 3 * 1024 * 1024;
+const CHUNK_SIZE = 512 * 1024;
+const allowedMime = new Set(["image/jpeg", "image/png"]);
 
-const allowedMime = new Set(["image/jpeg", "image/png", "application/json"]);
+async function writeDataFile(relativePath: string, bytes: Buffer) {
+  if (!usesRemoteDatabase()) {
+    const absolute = resolveDataPath(relativePath);
+    await fs.mkdir(path.dirname(absolute), { recursive: true });
+    await fs.writeFile(absolute, bytes);
+    return;
+  }
 
-async function ensureDirs() {
-  await Promise.all([
-    fs.mkdir(backgroundsDir, { recursive: true }),
-    fs.mkdir(snapshotsDir, { recursive: true }),
-    fs.mkdir(exportsDir, { recursive: true }),
-  ]);
+  await writeTransaction((transaction) => writeDatabaseFile(relativePath, bytes, transaction));
+}
+
+export async function writeDatabaseFile(relativePath: string, bytes: Buffer, transaction: Transaction) {
+  if (!bytes.length || bytes.length > CLOUD_FILE_LIMIT) throw new Error("File must be between 1 byte and 3 MiB");
+  await query("DELETE FROM parking_file_chunks WHERE path = ?", [relativePath], transaction);
+  for (let offset = 0; offset < bytes.length; offset += CHUNK_SIZE) {
+    await query("INSERT INTO parking_file_chunks (path, part, content) VALUES (?, ?, ?)",
+      [relativePath, offset / CHUNK_SIZE, bytes.subarray(offset, offset + CHUNK_SIZE)], transaction);
+  }
+}
+
+export async function readDataFile(relativePath: string): Promise<Buffer> {
+  return usesRemoteDatabase() ? readDatabaseFile(relativePath) : fs.readFile(resolveDataPath(relativePath));
+}
+
+export async function readDatabaseFile(relativePath: string): Promise<Buffer> {
+  const chunks = await queryRows<{ content: ArrayBuffer }>(
+    "SELECT content FROM parking_file_chunks WHERE path = ? ORDER BY part", [relativePath],
+  );
+  if (!chunks.length) throw Object.assign(new Error("Stored file not found"), { code: "ENOENT" });
+  return Buffer.concat(chunks.map((chunk) => Buffer.from(chunk.content)));
+}
+
+export async function saveWorkerSnapshot(id: string, image: Buffer) {
+  const relativePath = `snapshots/${id}/latest.jpg`;
+  await writeDataFile(relativePath, image);
+  return relativePath;
 }
 
 function extensionFromMime(mimeType: string): string {
@@ -42,14 +72,13 @@ export async function saveUploadedFile(options: {
 }) {
   const { file, kind, cameraId, maxBytes = 10 * 1024 * 1024 } = options;
 
-  if (!allowedMime.has(file.type) || file.type === "application/json") {
+  if (!allowedMime.has(file.type)) {
     throw new Error("Unsupported upload type");
   }
-  if (file.size > maxBytes) {
+  if (file.size > (usesRemoteDatabase() ? Math.min(maxBytes, CLOUD_FILE_LIMIT) : maxBytes)) {
     throw new Error("File too large");
   }
 
-  await ensureDirs();
 
   const ext = extensionFromMime(file.type);
   const base = sanitizeSegment(cameraId);
@@ -58,7 +87,7 @@ export async function saveUploadedFile(options: {
   const outputPath = path.join(STORAGE_ROOT, relativePath);
 
   const arrayBuffer = await file.arrayBuffer();
-  await fs.writeFile(outputPath, Buffer.from(arrayBuffer));
+  await writeDataFile(relativePath, Buffer.from(arrayBuffer));
 
   return {
     relativePath,
@@ -72,14 +101,13 @@ export async function saveExportJson(options: {
   payload: unknown;
 }) {
   const { cameraId, version, payload } = options;
-  await ensureDirs();
 
   const filename = stableName(`${sanitizeSegment(cameraId)}-v${version}`, ".json");
   const relativePath = path.posix.join("exports", filename);
   const outputPath = path.join(STORAGE_ROOT, relativePath);
   const json = JSON.stringify(payload, null, 2);
 
-  await fs.writeFile(outputPath, json, "utf8");
+  await writeDataFile(relativePath, Buffer.from(json));
 
   const checksum = crypto.createHash("sha256").update(json).digest("hex");
   return {

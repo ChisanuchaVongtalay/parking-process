@@ -27,7 +27,7 @@ type CameraItem = {
   isActive: boolean;
 };
 
-export function CameraManager({ health, available }: { health: Record<string, string>; available: boolean }) {
+export function CameraManager({ health }: { health: Record<string, string> }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -73,12 +73,12 @@ export function CameraManager({ health, available }: { health: Record<string, st
   }
 
   useEffect(() => {
-    if (available) void loadZones();
-  }, [available]);
+    void loadZones();
+  }, []);
 
   useEffect(() => {
-    if (available) void loadCameras(selectedZone || undefined);
-  }, [available, selectedZone]);
+    void loadCameras(selectedZone || undefined);
+  }, [selectedZone]);
 
   const zoneMap = useMemo(() => {
     return new Map(zones.map((zone) => [zone.id, `${zone.code} · ${zone.name}`]));
@@ -276,7 +276,7 @@ export function CameraManager({ health, available }: { health: Record<string, st
           <CardTitle>Add Camera</CardTitle>
         </CardHeader>
         <CardContent>
-          <fieldset disabled={!available} className="space-y-4">
+          <fieldset className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="zone-select">Zone</Label>
               <select
@@ -353,10 +353,9 @@ export function CameraManager({ health, available }: { health: Record<string, st
         <CardHeader>
           <CardTitle>Camera inventory</CardTitle>
           <div className="flex flex-wrap items-center gap-2 pt-2">
-            <Input disabled={!available} className="w-full sm:w-60" aria-label="ค้นหากล้อง" placeholder="ค้นหาชื่อหรือรหัสกล้อง…" value={search} onChange={(event) => setSearch(event.target.value)} />
+            <Input className="w-full sm:w-60" aria-label="ค้นหากล้อง" placeholder="ค้นหาชื่อหรือรหัสกล้อง…" value={search} onChange={(event) => setSearch(event.target.value)} />
             <select
               aria-label="กรองตามโซน"
-              disabled={!available}
               className="h-10 w-72 rounded-md border border-slate-300 bg-white px-3 text-sm"
               value={selectedZone}
               onChange={(e) => setSelectedZone(e.target.value)}
@@ -369,7 +368,7 @@ export function CameraManager({ health, available }: { health: Record<string, st
               ))}
             </select>
 
-            <Button size="sm" variant="outline" disabled={!available} onClick={exportCsv}>
+            <Button size="sm" variant="outline" onClick={exportCsv}>
               Export CSV
             </Button>
 
@@ -380,7 +379,7 @@ export function CameraManager({ health, available }: { health: Record<string, st
                 type="file"
                 accept=".csv,text/csv"
                 className="h-9 w-56"
-                disabled={!available || isImporting}
+                disabled={isImporting}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) void importCsv(file);
@@ -426,7 +425,7 @@ export function CameraManager({ health, available }: { health: Record<string, st
                 {!filtered.length ? (
                   <tr>
                     <td className="px-3 py-3 text-slate-500" colSpan={7}>
-                      {!available ? "รอเชื่อมข้อมูลกล้อง" : loading ? "กำลังโหลด…" : loadError ? "ข้อมูลไม่พร้อมใช้งาน" : "ไม่พบกล้อง"}
+                      {loading ? "กำลังโหลด…" : loadError ? "ข้อมูลไม่พร้อมใช้งาน" : "ไม่พบกล้อง"}
                     </td>
                   </tr>
                 ) : null}

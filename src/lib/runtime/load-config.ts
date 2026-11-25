@@ -8,7 +8,7 @@ import { db } from "@/db";
 import { cameras, zones } from "@/db/schema";
 import { getOrCreateCalibration } from "@/services/calibration";
 import { listCameraSlots } from "@/services/camera-slots";
-import { resolveDataPath } from "@/lib/storage";
+import { readDataFile, resolveDataPath } from "@/lib/storage";
 
 const pointTupleSchema = z.tuple([z.number(), z.number()]);
 
@@ -135,8 +135,7 @@ function toRuntimeConfig(doc: z.infer<typeof cameraExportSchema>, cameraId?: str
 }
 
 async function readExportFile(filePath: string): Promise<z.infer<typeof cameraExportSchema>> {
-  const absolutePath = path.isAbsolute(filePath) ? filePath : resolveDataPath(filePath);
-  const text = await fs.readFile(absolutePath, "utf8");
+  const text = path.isAbsolute(filePath) ? await fs.readFile(filePath, "utf8") : (await readDataFile(filePath)).toString("utf8");
   const parsed = JSON.parse(text) as unknown;
   return cameraExportSchema.parse(parsed);
 }

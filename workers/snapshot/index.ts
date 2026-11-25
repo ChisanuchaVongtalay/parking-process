@@ -1,6 +1,9 @@
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import { db } from "../../src/db";
+import { query, usesRemoteDatabase } from "../../src/db/client";
+import { sql } from "drizzle-orm";
+import { saveWorkerSnapshot } from "../../src/lib/storage";
 import { cameras } from "../../src/db/schema";
 import { runRuntimeProcessing } from "../../src/lib/runtime/run-pipeline";
 import { captureFrame, localStorage, SnapshotWorker } from "./worker";
@@ -25,15 +28,15 @@ process.on("SIGTERM", () => controller.abort());
 const worker = new SnapshotWorker({
   async listCameras() { return db.select({ id: cameras.id, streamUrl: cameras.streamUrl }).from(cameras).where(eq(cameras.isActive, true)).all(); },
   capture: (url, signal) => captureFrame(url, signal, timeout, transport),
-  save: storage.saveLatest,
+  save: usesRemoteDatabase() ? saveWorkerSnapshot : storage.saveLatest,
   async success(id, imagePath, at) {
-    db.transaction((tx) => {
-      tx.update(cameras).set({ latestSnapshotPath: imagePath, updatedAt: at }).where(eq(cameras.id, id)).run();
-      db.$client.prepare(`INSERT INTO snapshot_capture_status (camera_id, last_success_at, last_attempt_at, last_error) VALUES (?, ?, ?, NULL) ON CONFLICT(camera_id) DO UPDATE SET last_success_at=excluded.last_success_at, last_attempt_at=excluded.last_attempt_at, last_error=NULL`).run(id, at.getTime(), at.getTime());
+    await db.transaction(async (tx) => {
+      await tx.update(cameras).set({ latestSnapshotPath: imagePath, updatedAt: at }).where(eq(cameras.id, id)).run();
+      await tx.run(sql`INSERT INTO snapshot_capture_status (camera_id, last_success_at, last_attempt_at, last_error) VALUES (${id}, ${at.getTime()}, ${at.getTime()}, NULL) ON CONFLICT(camera_id) DO UPDATE SET last_success_at=excluded.last_success_at, last_attempt_at=excluded.last_attempt_at, last_error=NULL`);
     });
   },
   async failure(id, at, error) {
-    db.$client.prepare(`INSERT INTO snapshot_capture_status (camera_id, last_attempt_at, last_error) VALUES (?, ?, ?) ON CONFLICT(camera_id) DO UPDATE SET last_attempt_at=excluded.last_attempt_at, last_error=excluded.last_error`).run(id, at.getTime(), error);
+    await query("INSERT INTO snapshot_capture_status (camera_id, last_attempt_at, last_error) VALUES (?, ?, ?) ON CONFLICT(camera_id) DO UPDATE SET last_attempt_at=excluded.last_attempt_at, last_error=excluded.last_error", [id, at.getTime(), error]);
   },
   async process(id, imagePath, at) { await runRuntimeProcessing({ cameraId: id, snapshotPath: imagePath, capturedAt: at }); },
   log: (message) => console.log(new Date().toISOString(), message),

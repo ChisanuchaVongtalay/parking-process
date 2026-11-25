@@ -62,10 +62,12 @@ function toFileUrl(relativePath: string | null): string | null {
 }
 
 export function CalibrationWorkspace({
+  physicalSlots,
   initialCamera,
   initialSlots,
   initialCalibration,
 }: {
+  physicalSlots: { id: string; slotCode: string; vehicleType: SlotItem["vehicleType"] }[];
   initialCamera: CameraItem;
   initialSlots: SlotItem[];
   initialCalibration: CalibrationProfile;
@@ -973,12 +975,26 @@ export function CalibrationWorkspace({
                   onChange={(e) => {
                     const value = e.target.value as "car" | "motorcycle";
                     setSlots((prev) =>
-                      prev.map((item) => (item.id === selected.id ? { ...item, vehicleType: value } : item)),
+                      prev.map((item) => (item.id === selected.id ? { ...item, vehicleType: value, logicalSlotId: null } : item)),
                     );
                   }}
                 >
                   <option value="car">car</option>
                   <option value="motorcycle">motorcycle</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="logical-slot-connection">ช่องจอดจริงในโซน</Label>
+                <select id="logical-slot-connection"
+                  className="h-10 w-full rounded-md border border-slate-300 px-3"
+                  value={selected.logicalSlotId || ""}
+                  onChange={(event) => {
+                    const logicalSlotId = event.target.value || null;
+                    setSlots((prev) => prev.map((slot) => slot.id === selected.id ? { ...slot, logicalSlotId } : slot));
+                  }}>
+                  <option value="">ยังไม่ผูกช่องจอด</option>
+                  {physicalSlots.filter((slot) => slot.vehicleType === selected.vehicleType).map((slot) =>
+                    <option key={slot.id} value={slot.id}>{slot.slotCode}</option>)}
                 </select>
               </div>
               <Toggle

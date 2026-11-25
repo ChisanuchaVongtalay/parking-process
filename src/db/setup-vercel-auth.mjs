@@ -1,9 +1,9 @@
 import { createHash, randomUUID } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { createClient } from "@libsql/client";
 import { hashPassword, isAdminEmail, normalizeAdminEmail } from "../lib/auth/password.mjs";
 
-const authMigrations = ["0004_admin_auth", "0005_admin_email_domain"];
+const migrationsDir = new URL("../../drizzle/", import.meta.url);
 
 function validTemporaryPassword(password) {
   return typeof password === "string" && password.length >= 16 && password.length <= 256;
@@ -67,9 +67,11 @@ async function setup() {
     const transaction = await client.transaction("write");
 
     try {
-      for (const migration of authMigrations) {
+      const files = (await readdir(migrationsDir)).filter((file) => /^\d+_.*\.sql$/.test(file)).sort();
+      for (const file of files) {
+        const migration = file.slice(0, -4);
         if (await alreadyApplied(transaction, migration)) continue;
-        const schema = await readFile(new URL(`../../drizzle/${migration}.sql`, import.meta.url), "utf8");
+        const schema = await readFile(new URL(file, migrationsDir), "utf8");
         await transaction.executeMultiple(schema.replace(/^\uFEFF/, ""));
         await markApplied(transaction, migration);
       }

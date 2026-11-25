@@ -1,9 +1,8 @@
 import { isDownloadableDataFile } from "@/lib/auth/protected-files";
 import { adminEndpoint } from "@/lib/auth/access";
-import fs from "node:fs/promises";
 
 import { fail } from "@/lib/http";
-import { resolveDataPath } from "@/lib/storage";
+import { readDataFile } from "@/lib/storage";
 
 function contentType(filePath: string): string {
   if (filePath.endsWith(".png")) return "image/png";
@@ -20,13 +19,12 @@ async function handleGET(
     const { path } = await params;
     const relativePath = path.join("/");
     if (!isDownloadableDataFile(relativePath)) return fail("File not found", 404);
-    const absolutePath = resolveDataPath(relativePath);
-    const data = await fs.readFile(absolutePath);
+    const data = await readDataFile(relativePath);
 
-    return new Response(data, {
+    return new Response(new Uint8Array(data), {
       status: 200,
       headers: {
-        "content-type": contentType(absolutePath),
+        "content-type": contentType(relativePath),
         "cache-control": "private, no-store",
         "x-content-type-options": "nosniff",
       },

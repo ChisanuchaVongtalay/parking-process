@@ -1,4 +1,4 @@
-import { requireParkingAdminPage } from "@/lib/auth/session";
+import { requireAdminPage } from "@/lib/auth/session";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Activity, Camera, Clock, ParkingSquare } from "lucide-react";
@@ -11,12 +11,12 @@ import { listCameraSlots } from "@/services/camera-slots";
 export const dynamic = "force-dynamic";
 
 export default async function CameraDetail({ params }: { params: Promise<{ id: string }> }) {
-  await requireParkingAdminPage("/admin/cameras");
+  await requireAdminPage();
   const { id } = await params;
   const camera = await db.query.cameras.findFirst({ where: (cameras, { eq }) => eq(cameras.id, id) });
   if (!camera) notFound();
   const zone = await db.query.zones.findFirst({ where: (zones, { eq }) => eq(zones.id, camera.zoneId) });
-  const health = readCameraHealth().find((row) => row.id === id);
+  const health = (await readCameraHealth()).find((row) => row.id === id);
   const slots = await listCameraSlots(id);
   const status = health?.status ?? "Unknown";
   const snapshot = camera.latestSnapshotPath?.split("/").map(encodeURIComponent).join("/");

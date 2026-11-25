@@ -39,9 +39,9 @@ async function handlePOST(request: Request) {
       updatedAt: now,
     };
 
-    db.transaction((tx) => {
-      tx.insert(cameras).values(item).run();
-      tx.insert(calibrationProfiles).values({
+    await db.transaction(async (tx) => {
+      await tx.insert(cameras).values(item).run();
+      await tx.insert(calibrationProfiles).values({
         id: createId("cal"),
         cameraId: item.id,
         pixelThreshold: 15,

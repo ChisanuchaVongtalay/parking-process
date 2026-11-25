@@ -1,22 +1,23 @@
+import { queryRow } from "@/db/client";
 import { requireAdminPage } from "@/lib/auth/session";
 import Link from "next/link";
 import { Activity, Camera, Car, CircleHelp, Gauge, MapPin, ParkingSquare } from "lucide-react";
-import { isAuthOnlyDeployment } from "@/lib/auth/database";
 import { adminTime } from "@/lib/admin-time";
 import { readCameraHealth, readParkingOverview } from "@/lib/admin-overview";
-import { DataTable, EmptyState, Notice, PageHeading, Panel, ParkingStorageNotice, Stats, Status } from "@/components/admin/admin-ui";
+import { DataTable, EmptyState, Notice, PageHeading, Panel, Stats, Status } from "@/components/admin/admin-ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
   await requireAdminPage();
-  const available = !isAuthOnlyDeployment();
-  const overview = available ? readParkingOverview() : null;
-  const zones = overview?.zones ?? [];
-  const totals = overview?.totals;
-  const cameras = available ? readCameraHealth() : [];
-  const known = totals ? totals.free + totals.occupied : 0;
-  const coverage = totals?.slots ? (known / totals.slots * 100).toFixed(1) + "%" : "—";
+  const [overview, cameras, approvals] = await Promise.all([
+    readParkingOverview(),
+    readCameraHealth(),
+    queryRow<{ pending: number }>("SELECT COUNT(*) AS pending FROM vehicle_reviews WHERE status = 'pending'"),
+  ]);
+  const { zones, totals } = overview;
+  const known = totals.free + totals.occupied;
+  const coverage = totals.slots ? (known / totals.slots * 100).toFixed(1) + "%" : "—";
   const captureStates = ["Fresh", "Stale", "Error", "Unknown", "Disabled"];
   const latestCapture = cameras.reduce<number | null>((latest, camera) =>
     camera.captureAt !== null && (latest === null || camera.captureAt > latest) ? camera.captureAt : latest, null);
@@ -24,15 +25,15 @@ export default async function Dashboard() {
   return (
     <>
       <PageHeading title="Admin Dashboard" description="ภาพรวมการใช้พื้นที่จอดรถและสถานะระบบประมวลผล" />
-      {available ? <Notice title={known ? "ข้อมูลจากกล้องและช่องจอดที่กำหนดไว้" : "ยังไม่มีข้อมูลสถานะช่องจอดที่ใช้สรุปได้"}>
+      <Notice title={known ? "ข้อมูลจากกล้องและช่องจอดที่กำหนดไว้" : "ยังไม่มีข้อมูลสถานะช่องจอดที่ใช้สรุปได้"}>
         Coverage คำนวณจากช่องที่มีผลล่าสุดและผลจากกล้องสอดคล้องกัน อัปเดตภาพล่าสุด {adminTime(latestCapture)}
-      </Notice> : <ParkingStorageNotice />}
+      </Notice>
       <Stats items={[
-        { label: "Logical slots", value: totals?.slots ?? "—", icon: <ParkingSquare /> },
-        { label: "Occupied", value: known && totals ? totals.occupied : "—", icon: <Car />, tone: "bad" },
-        { label: "Physically free", value: known && totals ? totals.free : "—", icon: <ParkingSquare />, tone: "good" },
-        { label: "Unknown", value: totals?.unknown ?? "—", icon: <CircleHelp />, tone: "neutral" },
-        { label: "Coverage", value: coverage, detail: totals ? `${known} / ${totals.slots} slots` : undefined, icon: <Gauge />, tone: "warn" },
+        { label: "Logical slots", value: totals.slots, icon: <ParkingSquare /> },
+        { label: "Occupied", value: known ? totals.occupied : "—", icon: <Car />, tone: "bad" },
+        { label: "Physically free", value: known ? totals.free : "—", icon: <ParkingSquare />, tone: "good" },
+        { label: "Unknown", value: totals.unknown, icon: <CircleHelp />, tone: "neutral" },
+        { label: "Coverage", value: coverage, detail: `${known} / ${totals.slots} slots`, icon: <Gauge />, tone: "warn" },
       ]} />
       <div className="admin-grid wide">
         <Panel title="Zone overview" detail="จำนวนช่องว่างและช่องที่มีรถจากผลประมวลผลล่าสุด">
@@ -46,7 +47,7 @@ export default async function Dashboard() {
                 <td><Status tone={!known ? "neutral" : zone.unknown ? "warn" : "good"}>{!known ? "Unknown" : zone.unknown ? "Partial" : "Fresh"}</Status></td>
               </tr>;
             })}
-          </DataTable> : <EmptyState title={available ? "ยังไม่มีโซน" : "รอข้อมูลโซนจอดรถ"}><Link className="admin-link" href="/admin/zones">เปิดหน้า Parking Zones</Link></EmptyState>}
+          </DataTable> : <EmptyState title="ยังไม่มีโซน"><Link className="admin-link" href="/admin/zones">เปิดหน้า Parking Zones</Link></EmptyState>}
         </Panel>
         <Panel title="Campus map" detail="ตำแหน่งโซนในมหาวิทยาลัย">
           <div className="admin-map"><MapPin size={30} aria-hidden="true" /><strong>รอข้อมูลตำแหน่งที่ยืนยันแล้ว</strong>
@@ -56,15 +57,19 @@ export default async function Dashboard() {
       </div>
       <div className="admin-grid three">
         <Panel title="Camera Health" detail="สถานะการดึงภาพจาก Worker">
-          <dl className="admin-fields">{captureStates.map((status) => <div key={status}><dt>{status}</dt><dd>{available ? cameras.filter((camera) => camera.status === status).length : "—"}</dd></div>)}</dl>
+          <dl className="admin-fields">{captureStates.map((status) => <div key={status}><dt>{status}</dt><dd>{cameras.filter((camera) => camera.status === status).length}</dd></div>)}</dl>
           <Link className="admin-link mt-3 inline-flex items-center gap-2" href="/admin/monitor"><Activity size={16} /> Monitoring</Link>
         </Panel>
-        <Panel title="Vehicle Approvals"><EmptyState title="Not connected">รอเชื่อม Shared Vehicle Service</EmptyState></Panel>
+        <Panel title="Vehicle Approvals">
+          <EmptyState title={`${approvals?.pending ?? 0} รายการรอตรวจ`}>
+            <Link className="admin-link" href="/admin/vehicle-approvals">เปิดคิวตรวจรถ</Link>
+          </EmptyState>
+        </Panel>
         <Panel title="Recent system activity" detail="เวลาที่กล้องดึงภาพสำเร็จล่าสุด">
           {cameras.some((camera) => camera.captureAt !== null) ? <ul className="space-y-3">
             {cameras.filter((camera) => camera.captureAt !== null).sort((a, b) => (b.captureAt ?? 0) - (a.captureAt ?? 0)).slice(0, 4).map((camera) =>
               <li key={camera.id} className="flex items-center gap-2 text-sm"><Camera size={16} /><Link className="admin-link" href={`/admin/cameras/${camera.id}`}>{camera.code}</Link><span>{adminTime(camera.captureAt)}</span></li>)}
-          </ul> : <EmptyState title={available ? "ยังไม่มีประวัติการดึงภาพ" : "รอข้อมูลจาก Worker"}>ข้อมูลจะแสดงเมื่อ Worker ดึงภาพสำเร็จ</EmptyState>}
+          </ul> : <EmptyState title="ยังไม่มีประวัติการดึงภาพ">ข้อมูลจะแสดงเมื่อ Worker ดึงภาพสำเร็จ</EmptyState>}
         </Panel>
       </div>
     </>

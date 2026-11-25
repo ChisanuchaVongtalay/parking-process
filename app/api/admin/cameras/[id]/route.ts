@@ -28,23 +28,23 @@ async function handlePATCH(
     const { id } = await params;
     const payload = cameraPatchSchema.parse(await request.json());
 
-    return db.transaction((tx) => {
-      const existing = tx.query.cameras.findFirst({ where: eq(cameras.id, id) }).sync();
+    return await db.transaction(async (tx) => {
+      const existing = await tx.query.cameras.findFirst({ where: eq(cameras.id, id) });
       if (!existing) return fail("Camera not found", 404);
 
       if (payload.zoneId && payload.zoneId !== existing.zoneId) {
-        const zone = tx.query.zones.findFirst({ where: eq(zones.id, payload.zoneId) }).sync();
+        const zone = await tx.query.zones.findFirst({ where: eq(zones.id, payload.zoneId) });
         if (!zone) return fail("Zone not found", 404);
 
-        const mappedSlot = tx.query.cameraSlots.findFirst({
+        const mappedSlot = await tx.query.cameraSlots.findFirst({
           where: and(eq(cameraSlots.cameraId, id), isNotNull(cameraSlots.logicalSlotId)),
-        }).sync();
+        });
         if (mappedSlot) {
           return fail("ยกเลิกการผูก Logical Slot ของกล้องกับโซนเดิมก่อนย้ายโซน", 409);
         }
       }
 
-      const updated = tx.update(cameras)
+      const updated = await tx.update(cameras)
         .set({ ...payload, updatedAt: new Date() })
         .where(eq(cameras.id, id))
         .returning().get();

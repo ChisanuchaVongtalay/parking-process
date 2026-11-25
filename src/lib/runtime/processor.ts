@@ -1,4 +1,4 @@
-import fs from "node:fs/promises";
+import { readDataFile } from "@/lib/storage";
 
 import sharp from "sharp";
 
@@ -118,8 +118,8 @@ export async function processCameraSnapshot(
 ): Promise<RuntimeProcessResult> {
   const calibration = config.camera.calibration;
   const [backgroundBuffer, snapshotBuffer] = await Promise.all([
-    fs.readFile(config.camera.backgroundAbsolutePath),
-    fs.readFile(snapshotPath),
+    readDataFile(config.camera.backgroundImagePath),
+    readDataFile(snapshotPath),
   ]);
 
   const bgMeta = await sharp(backgroundBuffer).metadata();

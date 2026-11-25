@@ -79,12 +79,32 @@ For the first CapRover deployment, set `PARKING_SUPER_ADMIN_EMAIL`, `PARKING_SUP
 
 To hand over the console, create an account under **Admin Management** with the **Super Admin** role. Give the new owner their temporary password privately. Once the owner signs in and verifies access, they can disable the outgoing account. Role changes, password resets and disabled accounts revoke existing sessions. The default session lifetime is 30 minutes from sign-in and is configurable in **System Settings** for subsequent sign-ins. Public parking status endpoints remain available separately from the Admin Console.
 
-## Vercel authentication test
+## Vercel deployment
 
 Connect a Turso database to the target Vercel environment. Set `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `PARKING_SUPER_ADMIN_EMAIL` (an address at `lamduan.mfu.ac.th`), and `PARKING_SUPER_ADMIN_PASSWORD` (a unique temporary password of 16–256 characters). For a stable domain, set `PARKING_ADMIN_ORIGIN` to its HTTPS origin. Leave it unset when using changing Vercel Preview URLs.
 
-The repository's `vercel.json` build command applies the authentication migration and creates the first Super Admin on Turso. After the initial deployment, sign in at `/login`, change the temporary password, then remove `PARKING_SUPER_ADMIN_PASSWORD` from Vercel. Rebuilding leaves existing accounts and passwords intact.
+The repository's `vercel.json` build command applies the tracked migrations and creates the first Super Admin on Turso. After the initial deployment, sign in at `/login`, change the temporary password, then remove `PARKING_SUPER_ADMIN_PASSWORD` from Vercel. Rebuilding leaves existing accounts and passwords intact.
 
-The Vercel deployment supports sign-in, password change, the full Admin navigation and dashboard, and Super Admin pages for accounts, roles, session settings, and audit. The parking pages show unavailable data and disable their controls until connected to a persistent parking backend. Use a separate Turso database for a test environment.
+The Vercel deployment uses Turso for accounts and parking data. Use a separate Turso database for a test environment.
 
 To recover an existing Super Admin on Vercel, set `PARKING_SUPER_ADMIN_EMAIL` to the existing account at the corrected domain and set a new temporary `PARKING_SUPER_ADMIN_PASSWORD`. Set a unique `PARKING_SUPER_ADMIN_RESET_ID` in Production and redeploy. A reset ID can be used only once on a database. Recovery invalidates the account's sessions and requires a password change at next sign-in. Remove the reset ID and temporary password from Vercel after you have regained access.
+
+## User Web and Booking Service integration
+
+Configure the same high-entropy `PARKING_USER_API_KEY` (32+ characters) on the Admin server and in the User Web backend. Call these endpoints from the backend with `Authorization: Bearer <key>`. Keep the key and Turso credentials server-side. The caller must identify the signed-in applicant and check vehicle ownership before making a request.
+
+| Endpoint | Request | Response |
+| --- | --- | --- |
+| `POST /api/integration/v1/vehicle-reviews` | `multipart/form-data` with stable submission `id`, `applicantId`, `vehicleId`, `plate`, `province`, `brand`, `vehicleType` and `evidence` file. | `201` creates a pending review. An identical retry returns `200`. Reusing the ID with different data returns `409`. |
+| `GET /api/integration/v1/vehicle-reviews/{id}?applicantId={id}` | Use the same applicant and submission IDs. | `{data: {id, vehicleId, status, version, reason, createdAt, reviewedAt}}`. An unknown or mismatched applicant returns `404`. |
+| `GET /api/integration/v1/booking-policy` | Backend key. | `{data: {version, effectiveAt, student, staff}}` or `{data: null}` if no policy is effective. Each role contains `maxActive`, `maxDurationHours` and `advanceDays`. The booking backend enforces these limits. |
+
+Vehicle types are `Sedan`, `Hatchback`, `SUV`, `Pickup`, `Van`, `Motorcycle`, and `Other`. Evidence accepts JPEG, PNG and PDF up to 3 MiB. It is only available to signed-in Admin Console reviewers. A rejected review includes the reviewer’s reason, and a second concurrent decision cannot overwrite the first. The User Web can read the status after submission using the GET endpoint. Timestamp fields use Unix milliseconds.
+
+Public parking feeds remain available under `/api/public/zones/status`, `/api/public/zones`, and `/api/public/zones/{zoneId}/summary`. A physical availability estimate does not resolve booking eligibility.
+
+## Parking operations on Vercel
+
+Vercel setup runs the tracked migrations on Turso, including the configured zone and camera inventory. Zones, cameras, logical slot links and observations use this database. For manual calibration, reference images, uploaded test frames, and JSON exports are stored privately using the same Turso connection. Cloud uploads are limited to 3 MiB. Local deployments use the persistent directories under `DATA_DIR` for parking media.
+
+Run one Snapshot Worker from a Node.js host that can reach the CCTV streams. Install FFmpeg, set the same `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in that worker environment, and run `npm run worker:snapshot`. The worker saves the latest capture and observations in the shared database. Create logical slots on each zone and link the camera's calibration overlay to these slots to produce a deduplicated campus Dashboard.

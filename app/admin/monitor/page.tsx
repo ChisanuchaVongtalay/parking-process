@@ -1,8 +1,7 @@
-import { isAuthOnlyDeployment } from "@/lib/auth/database";
 import { requireAdminPage } from "@/lib/auth/session";
 import Link from "next/link";
 import { Activity, Camera, Clock, TriangleAlert } from "lucide-react";
-import { DataTable, EmptyState, PageHeading, Panel, ParkingStorageNotice, Stats, Status } from "@/components/admin/admin-ui";
+import { DataTable, EmptyState, PageHeading, Panel, Stats, Status } from "@/components/admin/admin-ui";
 import { MonitorWorkspace } from "@/components/admin/monitor/monitor-workspace";
 import { adminTime, readCameraHealth } from "@/lib/admin-overview";
 
@@ -10,18 +9,16 @@ export const dynamic = "force-dynamic";
 
 export default async function Monitoring() {
   await requireAdminPage();
-  const available = !isAuthOnlyDeployment();
-  const cameras = available ? readCameraHealth() : [];
+  const cameras = await readCameraHealth();
   const errors = cameras.filter((camera) => camera.status === "Error");
 
   return <>
     <PageHeading title="System Monitoring" description="ติดตามการดึงภาพ ผลประมวลผล และตรวจสอบปัญหาของกล้อง" />
-    {!available && <ParkingStorageNotice />}
     <Stats items={[
-      { label: "Enabled cameras", value: available ? cameras.filter((camera) => camera.active).length : "—", icon: <Camera /> },
-      { label: "Fresh captures", value: available ? cameras.filter((camera) => camera.status === "Fresh").length : "—", icon: <Activity />, tone: "good" },
-      { label: "Stale captures", value: available ? cameras.filter((camera) => camera.status === "Stale").length : "—", icon: <Clock />, tone: "warn" },
-      { label: "Capture errors", value: available ? errors.length : "—", icon: <TriangleAlert />, tone: "bad" },
+      { label: "Enabled cameras", value: cameras.filter((camera) => camera.active).length, icon: <Camera /> },
+      { label: "Fresh captures", value: cameras.filter((camera) => camera.status === "Fresh").length, icon: <Activity />, tone: "good" },
+      { label: "Stale captures", value: cameras.filter((camera) => camera.status === "Stale").length, icon: <Clock />, tone: "warn" },
+      { label: "Capture errors", value: errors.length, icon: <TriangleAlert />, tone: "bad" },
     ]} />
     <div className="admin-grid wide">
       <Panel title="Camera operations">
@@ -31,7 +28,7 @@ export default async function Monitoring() {
             <td><Status tone={camera.status === "Fresh" ? "good" : camera.status === "Error" ? "bad" : camera.status === "Stale" ? "warn" : "neutral"}>{camera.status}</Status></td>
             <td>{adminTime(camera.captureAt)}</td><td>{adminTime(camera.processedAt)}</td>
           </tr>)}
-          {!cameras.length && <tr><td colSpan={4}>{available ? "ยังไม่มีกล้องในระบบ" : "รอข้อมูลจากระบบประมวลผล"}</td></tr>}
+          {!cameras.length && <tr><td colSpan={4}>ยังไม่มีกล้องในระบบ</td></tr>}
         </DataTable>
       </Panel>
       <Panel title="Processing pipeline">
@@ -40,10 +37,10 @@ export default async function Monitoring() {
       </Panel>
       <Panel title="Capture incidents">
         {errors.length ? <ul className="space-y-2">{errors.map((camera) => <li key={camera.id}><Link className="admin-link" href={`/admin/cameras/${camera.id}`}>{camera.code}</Link> · Capture error</li>)}</ul>
-          : <EmptyState title={available ? "ไม่มี Capture error ที่บันทึกไว้" : "รอข้อมูลจาก Worker"}>รายการจะแสดงเมื่อ Snapshot Worker รายงานข้อผิดพลาดล่าสุด</EmptyState>}
+          : <EmptyState title="ไม่มี Capture error ที่บันทึกไว้">รายการจะแสดงเมื่อ Snapshot Worker รายงานข้อผิดพลาดล่าสุด</EmptyState>}
       </Panel>
       <Panel title="Operational notes"><p className="text-sm">เวลา Last capture และ Last processed บอกสถานะคนละขั้นตอน ตรวจทั้งสองค่าก่อนแปลผลช่องจอดใน Runtime</p></Panel>
     </div>
-    {available && <MonitorWorkspace />}
+    <MonitorWorkspace />
   </>;
 }

@@ -1,5 +1,4 @@
 import { adminEndpoint } from "@/lib/auth/access";
-import fs from "node:fs/promises";
 
 import { eq } from "drizzle-orm";
 
@@ -7,7 +6,7 @@ import { db } from "@/db";
 import { calibrationRuns, cameras } from "@/db/schema";
 import { fail, ok, parseJsonError } from "@/lib/http";
 import { createId } from "@/lib/id";
-import { resolveDataPath, saveUploadedFile } from "@/lib/storage";
+import { readDataFile, saveUploadedFile } from "@/lib/storage";
 import { calibrationUpdateSchema, slotBulkSchema } from "@/lib/validation";
 import { getOrCreateCalibration } from "@/services/calibration";
 import { listCameraSlots } from "@/services/camera-slots";
@@ -54,8 +53,8 @@ async function handlePOST(
     if (!snapshotPath) return fail("Snapshot not available", 400);
 
     const [backgroundBuffer, snapshotBuffer, calibrationFromDb, slotsFromDb] = await Promise.all([
-      fs.readFile(resolveDataPath(camera.backgroundImagePath)),
-      fs.readFile(resolveDataPath(snapshotPath)),
+      readDataFile(camera.backgroundImagePath),
+      readDataFile(snapshotPath),
       getOrCreateCalibration(id),
       listCameraSlots(id),
     ]);

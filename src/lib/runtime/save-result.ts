@@ -19,8 +19,8 @@ export async function saveProcessingResult(args: {
     ? snapshotPath.replace(process.cwd(), "").replace(/^[\\/]+/, "")
     : snapshotPath;
 
-  db.transaction((tx) => {
-    tx.insert(cameraObservations).values({
+  await db.transaction(async (tx) => {
+    await tx.insert(cameraObservations).values({
       id: observationId,
       cameraId,
       snapshotPath: relativeSnapshot,
@@ -32,7 +32,7 @@ export async function saveProcessingResult(args: {
     }).run();
 
     if (result.slots.length) {
-      tx.insert(slotObservations).values(
+      await tx.insert(slotObservations).values(
         result.slots.map((slot) => ({
           id: createId("sobs"),
           observationId,

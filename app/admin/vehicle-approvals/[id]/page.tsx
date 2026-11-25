@@ -1,28 +1,41 @@
-import { requireAdminPage } from "@/lib/auth/session";
 import { notFound } from "next/navigation";
-import { EmptyState, Notice, PageHeading, Panel, Status } from "@/components/admin/admin-ui";
-import { Button } from "@/components/ui/button";
+import { PageHeading, Panel, Status } from "@/components/admin/admin-ui";
+import { VehicleDecisionForm } from "@/components/admin/vehicle-decision-form";
+import { requireAdminPage } from "@/lib/auth/session";
+import { adminTime } from "@/lib/admin-time";
+import { getReview } from "@/services/vehicle-reviews";
 
-export default async function ApprovalDetail({ params }: { params: Promise<{ id: string }> }) {
+export default async function ReviewPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdminPage();
-  if ((await params).id !== "demo-001") notFound();
+  const review = await getReview((await params).id);
+  if (!review) notFound();
+  const evidenceUrl = `/api/admin/vehicle-reviews/${encodeURIComponent(review.id)}/evidence`;
+  const isImage = review.evidenceType.startsWith("image/");
+
   return <>
-    <PageHeading title="Vehicle Approval Detail" description="DEMO-001 · ตัวอย่างการตรวจคำขอ" parent={{ href: "/admin/vehicle-approvals", label: "Vehicle Approvals" }} />
-    <Notice title="Demo · Not connected">หน้าแสดงขั้นตอนตรวจสอบโดยใช้ข้อมูลจำลอง การตัดสินใจจะเปิดเมื่อบริการตรวจรถและสิทธิ์พร้อมใช้งาน</Notice>
+    <PageHeading title="Vehicle Approval Detail" description={review.id}
+      parent={{ href: "/admin/vehicle-approvals", label: "Vehicle Approvals" }} />
     <div className="admin-grid wide">
-      <div className="space-y-4">
-        <Panel title="ข้อมูลคำขอ"><dl className="admin-fields">
-          <div><dt>Applicant</dt><dd>ผู้ยื่นตัวอย่าง</dd></div><div><dt>Vehicle type</dt><dd>Sedan</dd></div>
-          <div><dt>Request ID</dt><dd>DEMO-001</dd></div><div><dt>Status</dt><dd><Status tone="warn">Pending · Demo</Status></dd></div>
-        </dl></Panel>
-        <Panel title="หลักฐานสิทธิ์ใช้รถ"><EmptyState title="Private evidence">รอเชื่อมพื้นที่เก็บไฟล์และระบบตรวจสิทธิ์รายคำขอ</EmptyState></Panel>
-      </div>
-      <div className="space-y-4">
-        <Panel title="Review decision"><EmptyState title="Decision locked">Shared Vehicle Service ยังไม่เชื่อมต่อ</EmptyState>
-          <div className="admin-actions mt-3"><Button disabled>Approve</Button><Button variant="outline" disabled>Reject</Button></div>
-        </Panel>
-        <Panel title="Review history"><p className="text-sm">Submitted · Demo</p></Panel>
-      </div>
+      <Panel title="ข้อมูลคำขอและหลักฐาน">
+        <dl className="admin-fields mb-4">
+          <div><dt>ผู้ยื่น</dt><dd>{review.applicantId}</dd></div>
+          <div><dt>ทะเบียน</dt><dd>{review.plate} · {review.province}</dd></div>
+          <div><dt>ยี่ห้อและประเภท</dt><dd>{review.brand} · {review.vehicleType}</dd></div>
+          <div><dt>วันที่ส่ง</dt><dd>{adminTime(review.createdAt)}</dd></div>
+        </dl>
+        {isImage && <img className="max-h-96 w-full rounded-lg bg-slate-100 object-contain" alt="เอกสารหลักฐานการใช้รถ" src={evidenceUrl} />}
+        {!isImage && <a className="admin-link" href={evidenceUrl}>ดาวน์โหลดหลักฐาน PDF</a>}
+      </Panel>
+      <Panel title="ผลการตรวจ">
+        {review.status === "pending" ? <VehicleDecisionForm id={review.id} version={review.version} /> : <>
+          <Status tone={review.status === "approved" ? "good" : "bad"}>{review.status === "approved" ? "อนุมัติแล้ว" : "ปฏิเสธแล้ว"}</Status>
+          <dl className="admin-fields mt-3">
+            <div><dt>ผู้ตรวจ</dt><dd>{review.reviewedBy}</dd></div>
+            <div><dt>เวลาตัดสินใจ</dt><dd>{adminTime(review.reviewedAt)}</dd></div>
+            <div><dt>หมายเหตุ</dt><dd>{review.reason || "—"}</dd></div>
+          </dl>
+        </>}
+      </Panel>
     </div>
   </>;
 }
