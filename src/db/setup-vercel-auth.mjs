@@ -99,11 +99,6 @@ async function setup() {
         }
       } else if (resetMarker && await resetSuperAdmin(transaction, resetMarker, email, password)) {
         message = "Super Admin temporary password reset successfully.";
-      } else if (mode === "migrate" && process.env.VERCEL_ENV === "production") {
-        const activeOwner = await transaction.execute("SELECT 1 FROM admin_accounts WHERE role = 'super_admin' AND active = 1 LIMIT 1");
-        if (!activeOwner.rows.length) {
-          throw new Error("No active Super Admin on Production Turso. Check the database connection or explicitly bootstrap the initial account.");
-        }
       }
       await transaction.commit();
       console.log(message);
