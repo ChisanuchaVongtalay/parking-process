@@ -8,7 +8,7 @@ import { db } from "@/db";
 import { cameras, zones } from "@/db/schema";
 
 export default async function CameraEditPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireParkingAdminPage();
+  await requireParkingAdminPage("/admin/cameras");
   const { id } = await params;
   const camera = db.query.cameras.findFirst({ where: eq(cameras.id, id) }).sync();
   if (!camera) notFound();

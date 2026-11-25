@@ -12,7 +12,7 @@ function slotTone(status: string) {
 }
 
 export default async function ZoneDetail({ params }: { params: Promise<{ id: string }> }) {
-  await requireParkingAdminPage();
+  await requireParkingAdminPage("/admin/zones");
   const { id } = await params;
   const zone = readParkingOverview().zones.find((item) => item.id === id);
   if (!zone) notFound();

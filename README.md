@@ -85,6 +85,6 @@ Connect a Turso database to the target Vercel environment. Set `TURSO_DATABASE_U
 
 The repository's `vercel.json` build command applies the authentication migration and creates the first Super Admin on Turso. After the initial deployment, sign in at `/login`, change the temporary password, then remove `PARKING_SUPER_ADMIN_PASSWORD` from Vercel. Rebuilding leaves existing accounts and passwords intact.
 
-The Vercel deployment supports sign-in, password change, the authentication dashboard, and Super Admin pages for accounts, roles, session settings, and audit. The parking operations and Worker require the persistent parking backend. Use a separate Turso database for a test environment.
+The Vercel deployment supports sign-in, password change, the full Admin navigation and dashboard, and Super Admin pages for accounts, roles, session settings, and audit. The parking pages show unavailable data and disable their controls until connected to a persistent parking backend. Use a separate Turso database for a test environment.
 
 To recover an existing Super Admin on Vercel, set `PARKING_SUPER_ADMIN_EMAIL` to the existing account at the corrected domain and set a new temporary `PARKING_SUPER_ADMIN_PASSWORD`. Set a unique `PARKING_SUPER_ADMIN_RESET_ID` in Production and redeploy. A reset ID can be used only once on a database. Recovery invalidates the account's sessions and requires a password change at next sign-in. Remove the reset ID and temporary password from Vercel after you have regained access.

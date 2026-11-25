@@ -43,9 +43,9 @@ export async function requireAdminPage(role?: AdminRole) {
   return session;
 }
 
-export async function requireParkingAdminPage() {
+export async function requireParkingAdminPage(listPath: string) {
   const session = await requireAdminPage();
-  if (isAuthOnlyDeployment()) redirect("/admin");
+  if (isAuthOnlyDeployment()) redirect(listPath);
   return session;
 }
 

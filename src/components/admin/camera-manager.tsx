@@ -27,7 +27,7 @@ type CameraItem = {
   isActive: boolean;
 };
 
-export function CameraManager({ health }: { health: Record<string, string> }) {
+export function CameraManager({ health, available }: { health: Record<string, string>; available: boolean }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -73,12 +73,12 @@ export function CameraManager({ health }: { health: Record<string, string> }) {
   }
 
   useEffect(() => {
-    loadZones();
-  }, []);
+    if (available) void loadZones();
+  }, [available]);
 
   useEffect(() => {
-    loadCameras(selectedZone || undefined);
-  }, [selectedZone]);
+    if (available) void loadCameras(selectedZone || undefined);
+  }, [available, selectedZone]);
 
   const zoneMap = useMemo(() => {
     return new Map(zones.map((zone) => [zone.id, `${zone.code} · ${zone.name}`]));
@@ -275,74 +275,76 @@ export function CameraManager({ health }: { health: Record<string, string> }) {
         <CardHeader>
           <CardTitle>Add Camera</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="zone-select">Zone</Label>
-            <select
-              id="zone-select"
-              className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm"
-              value={form.zoneId}
-              onChange={(e) => setForm((prev) => ({ ...prev, zoneId: e.target.value }))}
-            >
-              {zones.map((zone) => (
-                <option value={zone.id} key={zone.id}>
-                  {zone.code} · {zone.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="camera-code">Camera Code</Label>
-            <Input
-              id="camera-code"
-              value={form.code}
-              onChange={(e) => setForm((prev) => ({ ...prev, code: e.target.value }))}
-              placeholder="E1-CAM-01"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="camera-name">Camera Name</Label>
-            <Input
-              id="camera-name"
-              value={form.name}
-              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-              placeholder="E1 North Wing"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="stream-url">Stream URL (optional)</Label>
-            <Input
-              id="stream-url"
-              type="password"
-              autoComplete="off"
-              value={form.streamUrl}
-              onChange={(e) => setForm((prev) => ({ ...prev, streamUrl: e.target.value }))}
-              placeholder="rtsp://..."
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 rounded-md border border-slate-200 p-3">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="is-primary">Primary</Label>
-              <Switch
-                id="is-primary"
-                checked={form.isPrimary}
-                onCheckedChange={(checked) => setForm((prev) => ({ ...prev, isPrimary: checked }))}
+        <CardContent>
+          <fieldset disabled={!available} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="zone-select">Zone</Label>
+              <select
+                id="zone-select"
+                className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm"
+                value={form.zoneId}
+                onChange={(e) => setForm((prev) => ({ ...prev, zoneId: e.target.value }))}
+              >
+                {zones.map((zone) => (
+                  <option value={zone.id} key={zone.id}>
+                    {zone.code} · {zone.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="camera-code">Camera Code</Label>
+              <Input
+                id="camera-code"
+                value={form.code}
+                onChange={(e) => setForm((prev) => ({ ...prev, code: e.target.value }))}
+                placeholder="E1-CAM-01"
               />
             </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="is-active">Active</Label>
-              <Switch
-                id="is-active"
-                checked={form.isActive}
-                onCheckedChange={(checked) => setForm((prev) => ({ ...prev, isActive: checked }))}
+            <div className="space-y-2">
+              <Label htmlFor="camera-name">Camera Name</Label>
+              <Input
+                id="camera-name"
+                value={form.name}
+                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder="E1 North Wing"
               />
             </div>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="stream-url">Stream URL (optional)</Label>
+              <Input
+                id="stream-url"
+                type="password"
+                autoComplete="off"
+                value={form.streamUrl}
+                onChange={(e) => setForm((prev) => ({ ...prev, streamUrl: e.target.value }))}
+                placeholder="rtsp://..."
+              />
+            </div>
 
-          <Button className="w-full" onClick={createCamera}>
-            Create Camera
-          </Button>
+            <div className="grid grid-cols-2 gap-3 rounded-md border border-slate-200 p-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="is-primary">Primary</Label>
+                <Switch
+                  id="is-primary"
+                  checked={form.isPrimary}
+                  onCheckedChange={(checked) => setForm((prev) => ({ ...prev, isPrimary: checked }))}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="is-active">Active</Label>
+                <Switch
+                  id="is-active"
+                  checked={form.isActive}
+                  onCheckedChange={(checked) => setForm((prev) => ({ ...prev, isActive: checked }))}
+                />
+              </div>
+            </div>
+
+            <Button className="w-full" onClick={createCamera}>
+              Create Camera
+            </Button>
+          </fieldset>
         </CardContent>
       </Card>
       </details>
@@ -351,9 +353,10 @@ export function CameraManager({ health }: { health: Record<string, string> }) {
         <CardHeader>
           <CardTitle>Camera inventory</CardTitle>
           <div className="flex flex-wrap items-center gap-2 pt-2">
-            <Input className="w-full sm:w-60" aria-label="ค้นหากล้อง" placeholder="ค้นหาชื่อหรือรหัสกล้อง…" value={search} onChange={(event) => setSearch(event.target.value)} />
+            <Input disabled={!available} className="w-full sm:w-60" aria-label="ค้นหากล้อง" placeholder="ค้นหาชื่อหรือรหัสกล้อง…" value={search} onChange={(event) => setSearch(event.target.value)} />
             <select
               aria-label="กรองตามโซน"
+              disabled={!available}
               className="h-10 w-72 rounded-md border border-slate-300 bg-white px-3 text-sm"
               value={selectedZone}
               onChange={(e) => setSelectedZone(e.target.value)}
@@ -366,7 +369,7 @@ export function CameraManager({ health }: { health: Record<string, string> }) {
               ))}
             </select>
 
-            <Button size="sm" variant="outline" onClick={exportCsv}>
+            <Button size="sm" variant="outline" disabled={!available} onClick={exportCsv}>
               Export CSV
             </Button>
 
@@ -377,7 +380,7 @@ export function CameraManager({ health }: { health: Record<string, string> }) {
                 type="file"
                 accept=".csv,text/csv"
                 className="h-9 w-56"
-                disabled={isImporting}
+                disabled={!available || isImporting}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) void importCsv(file);
@@ -423,7 +426,7 @@ export function CameraManager({ health }: { health: Record<string, string> }) {
                 {!filtered.length ? (
                   <tr>
                     <td className="px-3 py-3 text-slate-500" colSpan={7}>
-                      {loading ? "กำลังโหลด…" : loadError ? "ข้อมูลไม่พร้อมใช้งาน" : "ไม่พบกล้อง"}
+                      {!available ? "รอเชื่อมข้อมูลกล้อง" : loading ? "กำลังโหลด…" : loadError ? "ข้อมูลไม่พร้อมใช้งาน" : "ไม่พบกล้อง"}
                     </td>
                   </tr>
                 ) : null}

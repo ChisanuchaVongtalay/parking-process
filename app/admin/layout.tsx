@@ -1,4 +1,3 @@
-import { isAuthOnlyDeployment } from "@/lib/auth/database";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SessionTimeout } from "@/components/admin/session-timeout";
@@ -13,7 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="admin-shell">
       <a href="#admin-content" className="admin-skip">ข้ามไปยังเนื้อหา</a>
       <SessionTimeout expiresAt={session.expiresAt} />
-      <AdminNavigation role={session.role} authOnly={isAuthOnlyDeployment()} />
+      <AdminNavigation role={session.role} />
       <div className="admin-main">
         <header className="admin-topbar flex-wrap gap-2">
           <div><strong>MFU Smart Parking</strong><small>Admin Console · Parking Processor</small></div>

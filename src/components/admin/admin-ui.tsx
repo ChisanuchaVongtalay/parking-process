@@ -52,3 +52,9 @@ export function DataTable({ headings, children }: { headings: string[]; children
 export function EmptyState({ title, children }: { title: string; children: ReactNode }) {
   return <div className="admin-empty"><strong>{title}</strong><p>{children}</p></div>;
 }
+
+export function ParkingStorageNotice() {
+  return <Notice title="ยังไม่ได้เชื่อมข้อมูลลานจอด">
+    สถานะช่องจอด กล้อง และผลจาก Snapshot Worker จะแสดงเมื่อเชื่อมระบบประมวลผลที่จอดรถ
+  </Notice>;
+}

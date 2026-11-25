@@ -1,9 +1,9 @@
-import { requireParkingAdminPage } from "@/lib/auth/session";
+import { requireAdminPage } from "@/lib/auth/session";
 import { DataTable, EmptyState, Notice, PageHeading, Panel, Status } from "@/components/admin/admin-ui";
 import { Button } from "@/components/ui/button";
 
 export default async function Policies() {
-  await requireParkingAdminPage();
+  await requireAdminPage();
   return <>
     <PageHeading title="Policy Management" description="กำหนดนโยบายการจองตามกลุ่มผู้ใช้และวันที่มีผล"
       actions={<><Button variant="outline" disabled>Preview changes</Button><Button disabled>Publish policy</Button></>} />

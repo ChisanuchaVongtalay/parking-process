@@ -1,10 +1,10 @@
-import { requireParkingAdminPage } from "@/lib/auth/session";
+import { requireAdminPage } from "@/lib/auth/session";
 import { BarChart3, Clock, Gauge, Layers } from "lucide-react";
 import { EmptyState, Notice, PageHeading, Panel, Stats } from "@/components/admin/admin-ui";
 import { Button } from "@/components/ui/button";
 
 export default async function Analytics() {
-  await requireParkingAdminPage();
+  await requireAdminPage();
   return <>
     <PageHeading title="Admin Analytics" description="วิเคราะห์การใช้พื้นที่จอด ช่วงเวลาหนาแน่น และคุณภาพข้อมูลย้อนหลัง"
       actions={<Button variant="outline" disabled>Export CSV</Button>} />

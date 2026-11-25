@@ -1,11 +1,11 @@
-import { requireParkingAdminPage } from "@/lib/auth/session";
+import { requireAdminPage } from "@/lib/auth/session";
 import Link from "next/link";
 import { Car, Clock, FileCheck, FileX } from "lucide-react";
 import { DataTable, Notice, PageHeading, Panel, Stats, Status } from "@/components/admin/admin-ui";
 import { Button } from "@/components/ui/button";
 
 export default async function VehicleApprovals() {
-  await requireParkingAdminPage();
+  await requireAdminPage();
   return <>
     <PageHeading title="Vehicle Approvals" description="คิวตรวจข้อมูลรถและหลักฐานการใช้รถ" actions={<Button variant="outline" disabled>Export list</Button>} />
     <Notice title="Not connected · Demo">ตัวอย่างคิวสำหรับแสดงขั้นตอนตรวจเอกสาร ระบบจริงรอเชื่อม Shared Vehicle Service</Notice>

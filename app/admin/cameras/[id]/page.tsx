@@ -11,7 +11,7 @@ import { listCameraSlots } from "@/services/camera-slots";
 export const dynamic = "force-dynamic";
 
 export default async function CameraDetail({ params }: { params: Promise<{ id: string }> }) {
-  await requireParkingAdminPage();
+  await requireParkingAdminPage("/admin/cameras");
   const { id } = await params;
   const camera = await db.query.cameras.findFirst({ where: (cameras, { eq }) => eq(cameras.id, id) });
   if (!camera) notFound();

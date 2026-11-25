@@ -30,8 +30,7 @@ const superAdminGroup = { label: "System Administration", items: [
   { href: "/admin/audit-logs", label: "Audit Logs", icon: Shield },
 ] };
 
-export function AdminNavigation({ role, authOnly }: { role: AdminRole; authOnly: boolean }) {
-  const visibleGroups = authOnly ? [{ ...groups[0], items: groups[0].items.slice(0, 1) }] : groups;
+export function AdminNavigation({ role }: { role: AdminRole }) {
   const pathname = usePathname();
   return (
     <aside className="admin-sidebar">
@@ -40,7 +39,7 @@ export function AdminNavigation({ role, authOnly }: { role: AdminRole; authOnly:
         <span><strong>MFU Smart<br />Parking</strong><small>Mae Fah Luang University</small></span>
       </Link>
       <nav aria-label="Admin navigation">
-        {(role === "super_admin" ? [...visibleGroups, superAdminGroup] : visibleGroups).map((group) => (
+        {(role === "super_admin" ? [...groups, superAdminGroup] : groups).map((group) => (
           <div key={group.label} className="admin-nav-group">
             <p>{group.label}</p>
             {group.items.map(({ href, label, icon: Icon }) => {

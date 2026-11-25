@@ -1,8 +1,8 @@
-import { requireParkingAdminPage } from "@/lib/auth/session";
+import { requireAdminPage } from "@/lib/auth/session";
 import { DataTable, EmptyState, Notice, PageHeading, Panel, Status } from "@/components/admin/admin-ui";
 
 export default async function SmartCampus() {
-  await requireParkingAdminPage();
+  await requireAdminPage();
   const prerequisites = ["Historical occupancy", "Verified campus geometry", "Authorized schedule source", "Booking Service", "Forecast validation"];
   return <>
     <PageHeading title="Smart Campus" description="ความพร้อมของข้อมูลสำหรับแนะนำโซนจอดรถและพยากรณ์ความต้องการ" />
