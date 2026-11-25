@@ -47,7 +47,7 @@ export function AdminCredentialsForm({ mode }: { mode: "login" | "password" }) {
   return <form onSubmit={submit} className="space-y-4">
     {isLogin ? <div className="space-y-2">
       <Label htmlFor="email">อีเมลมหาวิทยาลัย</Label>
-      <Input id="email" name="email" type="email" placeholder="name@landuan.mfu.ac.th" autoComplete="username" required maxLength={254} />
+      <Input id="email" name="email" type="email" placeholder="name@lamduan.mfu.ac.th" autoComplete="username" required maxLength={254} />
     </div> : <div className="space-y-2">
       <Label htmlFor="current-password">รหัสผ่านปัจจุบัน</Label>
       <Input id="current-password" name="currentPassword" type="password" autoComplete="current-password" required maxLength={256} />

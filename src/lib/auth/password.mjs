@@ -9,7 +9,7 @@ export function normalizeAdminEmail(email) {
 }
 
 export function isAdminEmail(email) {
-  return email.length <= 254 && /^[a-z0-9][a-z0-9._+-]*@landuan\.mfu\.ac\.th$/.test(email);
+  return email.length <= 254 && /^[a-z0-9][a-z0-9._+-]*@lamduan\.mfu\.ac\.th$/.test(email);
 }
 
 export async function hashPassword(password) {

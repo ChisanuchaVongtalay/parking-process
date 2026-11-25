@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   const input = loginSchema.safeParse(await request.json().catch(() => null));
   if (!input.success) return fail("กรุณากรอกอีเมลและรหัสผ่าน", 422);
   const email = normalizeAdminEmail(input.data.email);
-  if (!isAdminEmail(email)) return fail("กรุณาใช้อีเมล @landuan.mfu.ac.th", 422);
+  if (!isAdminEmail(email)) return fail("กรุณาใช้อีเมล @lamduan.mfu.ac.th", 422);
   if (!(await allowLoginAttempt(email))) return fail("ลองเข้าสู่ระบบหลายครั้งเกินไป กรุณารอ 15 นาที", 429);
 
   const account = await authRow<{ id: string; passwordHash: string }>(

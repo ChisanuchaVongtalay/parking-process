@@ -59,7 +59,7 @@ export function AdminAccounts({ accounts, currentId }: { accounts: Account[]; cu
     <Panel title="เพิ่มบัญชีผู้ดูแล">
       <form onSubmit={create} className="flex flex-wrap items-end gap-3">
         <div className="min-w-0 flex-1 basis-64 space-y-2">
-          <Label htmlFor="account-email">อีเมล @landuan.mfu.ac.th</Label>
+          <Label htmlFor="account-email">อีเมล @lamduan.mfu.ac.th</Label>
           <Input id="account-email" name="email" type="email" required maxLength={254} />
         </div>
         <div className="space-y-2">

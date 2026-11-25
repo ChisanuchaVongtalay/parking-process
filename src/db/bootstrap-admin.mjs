@@ -19,7 +19,7 @@ async function bootstrap() {
   }
 
   const email = normalizeAdminEmail(emailArg ?? configuredEmail);
-  if (!isAdminEmail(email)) throw new Error("Use an @landuan.mfu.ac.th email.");
+  if (!isAdminEmail(email)) throw new Error("Use an @lamduan.mfu.ac.th email.");
   if (!emailArg && (configuredPassword.length < 16 || configuredPassword.length > 256)) {
     throw new Error("The bootstrap password must be 16–256 characters.");
   }

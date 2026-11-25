@@ -11,7 +11,7 @@ export const POST = adminEndpoint(async (session, request: Request) => {
     .safeParse(await request.json().catch(() => null));
   if (!input.success) return fail("ข้อมูลบัญชีไม่ถูกต้อง", 422);
   const email = normalizeAdminEmail(input.data.email);
-  if (!isAdminEmail(email)) return fail("กรุณาใช้อีเมล @landuan.mfu.ac.th", 422);
+  if (!isAdminEmail(email)) return fail("กรุณาใช้อีเมล @lamduan.mfu.ac.th", 422);
 
   const password = randomBytes(24).toString("base64url");
   const passwordHash = await hashPassword(password);
