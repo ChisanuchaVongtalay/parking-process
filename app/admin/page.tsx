@@ -1,13 +1,24 @@
 import { requireAdminPage } from "@/lib/auth/session";
 import Link from "next/link";
 import { Activity, Camera, Car, CircleHelp, Gauge, MapPin, ParkingSquare } from "lucide-react";
-import { adminTime, readCameraHealth, readParkingOverview } from "@/lib/admin-overview";
+import { isAuthOnlyDeployment } from "@/lib/auth/database";
+import { adminTime } from "@/lib/admin-time";
 import { DataTable, EmptyState, Notice, PageHeading, Panel, Stats, Status } from "@/components/admin/admin-ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
-  await requireAdminPage();
+  const session = await requireAdminPage();
+  if (isAuthOnlyDeployment()) {
+    return <>
+      <PageHeading title="Admin Dashboard" description="MFU Smart Parking Admin Console" />
+      <Notice title="เข้าสู่ระบบสำเร็จ">{session.email} · {session.role === "super_admin" ? "Super Admin" : "Admin"}</Notice>
+      <Panel title="การทดสอบบน Vercel">
+        <EmptyState title="ระบบล็อกอินพร้อมทดสอบ">ข้อมูลลานจอด กล้อง และ Snapshot Worker ต้องเชื่อม backend ของระบบจอดรถก่อนใช้งาน</EmptyState>
+      </Panel>
+    </>;
+  }
+  const { readCameraHealth, readParkingOverview } = await import("@/lib/admin-overview");
   const { zones, totals } = readParkingOverview();
   const cameras = readCameraHealth();
   const known = totals.free + totals.occupied;

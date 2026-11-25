@@ -1,4 +1,4 @@
-import { requireAdminPage } from "@/lib/auth/session";
+import { requireParkingAdminPage } from "@/lib/auth/session";
 import { MapPin, ParkingSquare } from "lucide-react";
 import { ZoneManager } from "@/components/admin/zone-manager";
 import { PageHeading, Stats } from "@/components/admin/admin-ui";
@@ -7,7 +7,7 @@ import { readParkingOverview } from "@/lib/admin-overview";
 export const dynamic = "force-dynamic";
 
 export default async function ZonesPage() {
-  await requireAdminPage();
+  await requireParkingAdminPage();
   const { zones, totals } = readParkingOverview();
   const inventory = Object.fromEntries(zones.map((zone) => [zone.id, {
     slots: zone.slots.length, known: zone.free + zone.occupied,

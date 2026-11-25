@@ -1,4 +1,4 @@
-import { requireAdminPage } from "@/lib/auth/session";
+import { requireParkingAdminPage } from "@/lib/auth/session";
 import Link from "next/link";
 import { Activity, Camera, Clock, TriangleAlert } from "lucide-react";
 import { DataTable, EmptyState, PageHeading, Panel, Stats, Status } from "@/components/admin/admin-ui";
@@ -8,7 +8,7 @@ import { adminTime, readCameraHealth } from "@/lib/admin-overview";
 export const dynamic = "force-dynamic";
 
 export default async function Monitoring() {
-  await requireAdminPage();
+  await requireParkingAdminPage();
   const cameras = readCameraHealth();
   const errors = cameras.filter((camera) => camera.status === "Error");
 

@@ -78,3 +78,11 @@ npm run admin:bootstrap -- owner@landuan.mfu.ac.th /private/path/mfu-admin-passw
 For the first CapRover deployment, set `PARKING_SUPER_ADMIN_EMAIL`, `PARKING_SUPER_ADMIN_PASSWORD` (a unique temporary password of 16–256 characters), and `PARKING_ADMIN_ORIGIN` (the public HTTPS origin). Keep the app's existing persistent `DATA_DIR` mount. The container runs migrations and provisions the first Super Admin during startup. Remove the bootstrap password from deployment settings after setup. Each account sets its own password at first sign-in.
 
 To hand over the console, create an account under **Admin Management** with the **Super Admin** role. Give the new owner their temporary password privately. Once the owner signs in and verifies access, they can disable the outgoing account. Role changes, password resets and disabled accounts revoke existing sessions. The default session lifetime is 30 minutes from sign-in and is configurable in **System Settings** for subsequent sign-ins. Public parking status endpoints remain available separately from the Admin Console.
+
+## Vercel authentication test
+
+Connect a Turso database to the target Vercel environment. Set `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `PARKING_SUPER_ADMIN_EMAIL` (an address at `landuan.mfu.ac.th`), and `PARKING_SUPER_ADMIN_PASSWORD` (a unique temporary password of 16–256 characters). For a stable domain, set `PARKING_ADMIN_ORIGIN` to its HTTPS origin. Leave it unset when using changing Vercel Preview URLs.
+
+The repository's `vercel.json` build command applies the authentication migration and creates the first Super Admin on Turso. After the initial deployment, sign in at `/login`, change the temporary password, then remove `PARKING_SUPER_ADMIN_PASSWORD` from Vercel. Rebuilding leaves existing accounts and passwords intact.
+
+The Vercel deployment supports sign-in, password change, the authentication dashboard, and Super Admin pages for accounts, roles, session settings, and audit. The parking operations and Worker require the persistent parking backend. Use a separate Turso database for a test environment.

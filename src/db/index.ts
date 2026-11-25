@@ -5,10 +5,20 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 
 import * as schema from "./schema";
 
-const dbPath = path.join(path.resolve(process.env.DATA_DIR || path.join(process.cwd(), "data")), "sqlite", "parking.db");
-fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+function openDb() {
+  const dbPath = path.join(path.resolve(process.env.DATA_DIR || path.join(process.cwd(), "data")), "sqlite", "parking.db");
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+  const sqlite = new Database(dbPath);
+  sqlite.pragma("journal_mode = WAL");
+  return drizzle(sqlite, { schema });
+}
 
-const sqlite = new Database(dbPath);
-sqlite.pragma("journal_mode = WAL");
+let connection: ReturnType<typeof openDb> | undefined;
 
-export const db = drizzle(sqlite, { schema });
+export const db = new Proxy({} as ReturnType<typeof openDb>, {
+  get(_target, property) {
+    const current = connection ??= openDb();
+    const value = Reflect.get(current, property);
+    return typeof value === "function" ? value.bind(current) : value;
+  },
+});

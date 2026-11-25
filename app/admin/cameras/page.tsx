@@ -1,4 +1,4 @@
-import { requireAdminPage } from "@/lib/auth/session";
+import { requireParkingAdminPage } from "@/lib/auth/session";
 import { Activity, Camera, Clock, TriangleAlert } from "lucide-react";
 import { CameraManager } from "@/components/admin/camera-manager";
 import { Notice, PageHeading, Stats } from "@/components/admin/admin-ui";
@@ -7,7 +7,7 @@ import { readCameraHealth } from "@/lib/admin-overview";
 export const dynamic = "force-dynamic";
 
 export default async function CamerasPage() {
-  await requireAdminPage();
+  await requireParkingAdminPage();
   const cameras = readCameraHealth();
   return <>
     <PageHeading title="Cameras" description="ลงทะเบียนกล้อง ตรวจสถานะการดึงภาพ และเปิด Calibration Editor" />

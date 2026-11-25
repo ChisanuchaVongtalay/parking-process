@@ -1,4 +1,4 @@
-import { requireAdminPage } from "@/lib/auth/session";
+import { requireParkingAdminPage } from "@/lib/auth/session";
 import { notFound } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
 
@@ -8,7 +8,7 @@ import { db } from "@/db";
 import { cameras, zones } from "@/db/schema";
 
 export default async function CameraEditPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdminPage();
+  await requireParkingAdminPage();
   const { id } = await params;
   const camera = db.query.cameras.findFirst({ where: eq(cameras.id, id) }).sync();
   if (!camera) notFound();

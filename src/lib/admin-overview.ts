@@ -2,13 +2,7 @@ import { db } from "@/db";
 
 const configuredAge = Number(process.env.SNAPSHOT_MAX_AGE_SECONDS || 900);
 const maxAge = Number.isFinite(configuredAge) && configuredAge > 0 ? configuredAge : 900;
-const formatTime = new Intl.DateTimeFormat("th-TH", {
-  dateStyle: "medium", timeStyle: "medium", timeZone: "Asia/Bangkok",
-});
-
-export function adminTime(value: number | Date | null | undefined) {
-  return value == null ? "—" : formatTime.format(value);
-}
+export { adminTime } from "./admin-time";
 
 export function readParkingOverview() {
   const cutoff = Date.now() - maxAge * 1000;

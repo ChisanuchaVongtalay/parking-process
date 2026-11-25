@@ -1,3 +1,4 @@
+import { isAuthOnlyDeployment } from "./database";
 import { fail } from "@/lib/http";
 import { getAdminSession, recordAudit, type AdminSession } from "./session";
 
@@ -27,8 +28,9 @@ export function adminEndpoint<Args extends EndpointArgs>(
     if (session.mustChangePassword) return fail("กรุณาเปลี่ยนรหัสผ่านชั่วคราว", 403);
     if (options.superAdmin && session.role !== "super_admin") return fail("ต้องใช้สิทธิ์ Super Admin", 403);
     if (request.method !== "GET" && !hasSameOrigin(request)) return fail("Origin not allowed", 403);
+    if (!options.superAdmin && isAuthOnlyDeployment()) return fail("Parking storage is unavailable in this deployment", 503);
     const response = await handler(session, ...args);
-    if (options.audit) recordAudit(session.email, options.audit, new URL(request.url).pathname, response.status);
+    if (options.audit) await recordAudit(session.email, options.audit, new URL(request.url).pathname, response.status);
     return response;
   };
 }

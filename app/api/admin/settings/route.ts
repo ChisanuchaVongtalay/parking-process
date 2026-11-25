@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { db } from "@/db";
+import { authQuery, authWrite } from "@/lib/auth/database";
 import { fail, ok } from "@/lib/http";
 import { adminEndpoint } from "@/lib/auth/access";
 import { recordAudit } from "@/lib/auth/session";
@@ -10,10 +10,10 @@ export const PATCH = adminEndpoint(async (session, request: Request) => {
   if (!input.success) return fail("กำหนดเวลาได้ตั้งแต่ 5 ถึง 480 นาที", 422);
   const { sessionMinutes } = input.data;
 
-  db.$client.transaction(() => {
-    db.$client.prepare("UPDATE admin_settings SET session_minutes = ? WHERE id = 1").run(sessionMinutes);
-    recordAudit(session.email, "settings.session_duration", String(sessionMinutes), 200);
-  }).immediate();
+  await authWrite(async (transaction) => {
+    await authQuery("UPDATE admin_settings SET session_minutes = ? WHERE id = 1", [sessionMinutes], transaction);
+    await recordAudit(session.email, "settings.session_duration", String(sessionMinutes), 200, transaction);
+  });
 
   return ok({ sessionMinutes });
 }, { superAdmin: true });

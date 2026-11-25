@@ -1,4 +1,4 @@
-import { requireAdminPage } from "@/lib/auth/session";
+import { requireParkingAdminPage } from "@/lib/auth/session";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Car, CircleHelp, ParkingSquare } from "lucide-react";
@@ -12,7 +12,7 @@ function slotTone(status: string) {
 }
 
 export default async function ZoneDetail({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdminPage();
+  await requireParkingAdminPage();
   const { id } = await params;
   const zone = readParkingOverview().zones.find((item) => item.id === id);
   if (!zone) notFound();

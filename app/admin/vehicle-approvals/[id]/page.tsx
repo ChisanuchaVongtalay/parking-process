@@ -1,10 +1,10 @@
-import { requireAdminPage } from "@/lib/auth/session";
+import { requireParkingAdminPage } from "@/lib/auth/session";
 import { notFound } from "next/navigation";
 import { EmptyState, Notice, PageHeading, Panel, Status } from "@/components/admin/admin-ui";
 import { Button } from "@/components/ui/button";
 
 export default async function ApprovalDetail({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdminPage();
+  await requireParkingAdminPage();
   if ((await params).id !== "demo-001") notFound();
   return <>
     <PageHeading title="Vehicle Approval Detail" description="DEMO-001 · ตัวอย่างการตรวจคำขอ" parent={{ href: "/admin/vehicle-approvals", label: "Vehicle Approvals" }} />
