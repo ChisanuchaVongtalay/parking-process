@@ -1,3 +1,4 @@
+import { adminEndpoint } from "@/lib/auth/access";
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
@@ -5,7 +6,7 @@ import { cameras } from "@/db/schema";
 import { fail, ok, parseJsonError } from "@/lib/http";
 import { saveUploadedFile } from "@/lib/storage";
 
-export async function POST(
+async function handlePOST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -34,3 +35,5 @@ export async function POST(
     return parseJsonError(error);
   }
 }
+
+export const POST = adminEndpoint((_session, ...args: Parameters<typeof handlePOST>) => handlePOST(...args), { audit: "camera.background_update" });

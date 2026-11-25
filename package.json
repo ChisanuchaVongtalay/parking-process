@@ -11,6 +11,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:migrate:prod": "node src/db/migrate.js",
+    "admin:bootstrap": "node src/db/bootstrap-admin.mjs",
     "db:seed": "tsx src/db/seed.ts",
     "processor:start": "node src/server.js",
     "worker:snapshot": "tsx workers/snapshot/index.ts",

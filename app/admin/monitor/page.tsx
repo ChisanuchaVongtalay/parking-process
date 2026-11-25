@@ -1,150 +1,46 @@
-"use client";
+import { requireAdminPage } from "@/lib/auth/session";
+import Link from "next/link";
+import { Activity, Camera, Clock, TriangleAlert } from "lucide-react";
+import { DataTable, EmptyState, PageHeading, Panel, Stats, Status } from "@/components/admin/admin-ui";
+import { MonitorWorkspace } from "@/components/admin/monitor/monitor-workspace";
+import { adminTime, readCameraHealth } from "@/lib/admin-overview";
 
-import { useEffect, useMemo, useState } from "react";
+export const dynamic = "force-dynamic";
 
-import {
-  CameraDetailView,
-  type MonitorCameraSummary,
-} from "@/components/admin/monitor/camera-view";
-import { SlotResultTable, type MonitorSlotRow } from "@/components/admin/monitor/slot-table";
-import { ManualTestPanel } from "@/components/admin/monitor/test-panel";
-import {
-  ZoneSummaryPanel,
-  type MonitorZoneSummary,
-} from "@/components/admin/monitor/zone-summary";
-import { Button } from "@/components/ui/button";
+export default async function Monitoring() {
+  await requireAdminPage();
+  const cameras = readCameraHealth();
+  const errors = cameras.filter((camera) => camera.status === "Error");
 
-export default function AdminMonitorPage() {
-  const [zones, setZones] = useState<MonitorZoneSummary[]>([]);
-  const [cameras, setCameras] = useState<MonitorCameraSummary[]>([]);
-  const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
-  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null);
-  const [cameraSummary, setCameraSummary] = useState<MonitorCameraSummary | null>(null);
-  const [slotRows, setSlotRows] = useState<MonitorSlotRow[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  async function loadZones() {
-    const res = await fetch("/api/public/zones", { cache: "no-store" });
-    const json = await res.json();
-    setZones(json.data?.zones ?? []);
-  }
-
-  async function loadCameras(zoneId?: string | null) {
-    const query = zoneId ? `?zoneId=${zoneId}` : "";
-    const res = await fetch(`/api/public/cameras${query}`, { cache: "no-store" });
-    const json = await res.json();
-    setCameras(json.data?.cameras ?? []);
-  }
-
-  async function loadCameraDetail(cameraId: string) {
-    setLoading(true);
-    try {
-      const [summaryRes, slotsRes] = await Promise.all([
-        fetch(`/api/public/cameras/${cameraId}`, { cache: "no-store" }),
-        fetch(`/api/public/cameras/${cameraId}/slots`, { cache: "no-store" }),
-      ]);
-
-      const summaryJson = await summaryRes.json();
-      const slotsJson = await slotsRes.json();
-
-      if (!summaryRes.ok) {
-        setCameraSummary(null);
-        setSlotRows([]);
-        return;
-      }
-
-      setCameraSummary(summaryJson.data ?? null);
-      setSlotRows(slotsJson.data?.slots ?? []);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function refreshAll() {
-    await Promise.all([loadZones(), loadCameras(selectedZoneId)]);
-    if (selectedCameraId) {
-      await loadCameraDetail(selectedCameraId);
-    }
-  }
-
-  useEffect(() => {
-    void loadZones();
-    void loadCameras();
-  }, []);
-
-  useEffect(() => {
-    void loadCameras(selectedZoneId);
-    setSelectedCameraId(null);
-    setCameraSummary(null);
-    setSlotRows([]);
-  }, [selectedZoneId]);
-
-  useEffect(() => {
-    if (!selectedCameraId) return;
-    void loadCameraDetail(selectedCameraId);
-  }, [selectedCameraId]);
-
-  const cameraOptions = useMemo(
-    () =>
-      cameras.map((camera) => ({
-        cameraId: camera.cameraId,
-        cameraCode: camera.cameraCode,
-        cameraName: camera.cameraName,
-      })),
-    [cameras],
-  );
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold">Admin Monitoring Dashboard</h2>
-          <p className="text-sm text-slate-600">
-            Monitor runtime observations, validate results, and compare calibration vs runtime.
-          </p>
-        </div>
-        <Button variant="outline" onClick={() => void refreshAll()}>
-          Refresh
-        </Button>
-      </div>
-
-      <ZoneSummaryPanel
-        zones={zones}
-        selectedZoneId={selectedZoneId}
-        onSelectZone={(zoneId) => setSelectedZoneId(zoneId)}
-      />
-
-      <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr]">
-        <div className="space-y-4">
-          <div className="rounded-lg border border-slate-200 bg-white p-3">
-            <label className="text-sm">
-              Camera
-              <select
-                className="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm"
-                value={selectedCameraId ?? ""}
-                onChange={(e) => setSelectedCameraId(e.target.value || null)}
-              >
-                <option value="">Select camera</option>
-                {cameras.map((camera) => (
-                  <option key={camera.cameraId} value={camera.cameraId}>
-                    {camera.cameraCode} · {camera.cameraName}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          {loading ? <p className="text-sm text-slate-500">Loading camera data...</p> : null}
-          <CameraDetailView summary={cameraSummary} />
-          <SlotResultTable title="Latest Slot Result (Runtime DB)" rows={slotRows} />
-        </div>
-
-        <ManualTestPanel
-          cameras={cameraOptions}
-          selectedCameraId={selectedCameraId}
-          onSelectCamera={(id) => setSelectedCameraId(id)}
-        />
-      </div>
+  return <>
+    <PageHeading title="System Monitoring" description="ติดตามการดึงภาพ ผลประมวลผล และตรวจสอบปัญหาของกล้อง" />
+    <Stats items={[
+      { label: "Enabled cameras", value: cameras.filter((camera) => camera.active).length, icon: <Camera /> },
+      { label: "Fresh captures", value: cameras.filter((camera) => camera.status === "Fresh").length, icon: <Activity />, tone: "good" },
+      { label: "Stale captures", value: cameras.filter((camera) => camera.status === "Stale").length, icon: <Clock />, tone: "warn" },
+      { label: "Capture errors", value: errors.length, icon: <TriangleAlert />, tone: "bad" },
+    ]} />
+    <div className="admin-grid wide">
+      <Panel title="Camera operations">
+        <DataTable headings={["Camera", "Capture status", "Last capture", "Last processed"]}>
+          {cameras.map((camera) => <tr key={camera.id}>
+            <td><Link className="admin-link" href={`/admin/cameras/${camera.id}`}>{camera.code}</Link></td>
+            <td><Status tone={camera.status === "Fresh" ? "good" : camera.status === "Error" ? "bad" : camera.status === "Stale" ? "warn" : "neutral"}>{camera.status}</Status></td>
+            <td>{adminTime(camera.captureAt)}</td><td>{adminTime(camera.processedAt)}</td>
+          </tr>)}
+          {!cameras.length && <tr><td colSpan={4}>ยังไม่มีกล้องในระบบ</td></tr>}
+        </DataTable>
+      </Panel>
+      <Panel title="Processing pipeline">
+        <ol className="space-y-3">{["RTSP Cameras", "FFmpeg Snapshot Worker", "Pixel Difference", "Camera & slot observations"].map((step) =>
+          <li key={step} className="rounded-lg border border-[#ece9e5] bg-[#faf9f6] p-3 text-sm font-medium">{step}</li>)}</ol>
+      </Panel>
+      <Panel title="Capture incidents">
+        {errors.length ? <ul className="space-y-2">{errors.map((camera) => <li key={camera.id}><Link className="admin-link" href={`/admin/cameras/${camera.id}`}>{camera.code}</Link> · Capture error</li>)}</ul>
+          : <EmptyState title="ไม่มี Capture error ที่บันทึกไว้">รายการจะแสดงเมื่อ Snapshot Worker รายงานข้อผิดพลาดล่าสุด</EmptyState>}
+      </Panel>
+      <Panel title="Operational notes"><p className="text-sm">เวลา Last capture และ Last processed บอกสถานะคนละขั้นตอน ตรวจทั้งสองค่าก่อนแปลผลช่องจอดใน Runtime</p></Panel>
     </div>
-  );
+    <MonitorWorkspace />
+  </>;
 }

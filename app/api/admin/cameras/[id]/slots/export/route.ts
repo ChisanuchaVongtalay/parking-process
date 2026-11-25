@@ -1,7 +1,8 @@
+import { adminEndpoint } from "@/lib/auth/access";
 import { ok, parseJsonError } from "@/lib/http";
 import { listCameraSlots } from "@/services/camera-slots";
 
-export async function GET(
+async function handleGET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -25,3 +26,5 @@ export async function GET(
     return parseJsonError(error);
   }
 }
+
+export const GET = adminEndpoint((_session, ...args: Parameters<typeof handleGET>) => handleGET(...args));

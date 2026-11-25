@@ -1,3 +1,4 @@
+import { adminEndpoint } from "@/lib/auth/access";
 import { desc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
@@ -6,7 +7,7 @@ import { fail, ok, parseJsonError } from "@/lib/http";
 import { createId } from "@/lib/id";
 import { cameraCreateSchema } from "@/lib/validation";
 
-export async function GET(request: Request) {
+async function handleGET(request: Request) {
   const { searchParams } = new URL(request.url);
   const zoneId = searchParams.get("zoneId");
 
@@ -16,10 +17,10 @@ export async function GET(request: Request) {
     orderBy: [desc(cameras.createdAt)],
   });
 
-  return ok(data);
+  return ok(data.map(({ streamUrl, ...camera }) => ({ ...camera, hasStream: Boolean(streamUrl) })));
 }
 
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   try {
     const payload = cameraCreateSchema.parse(await request.json());
     const now = new Date();
@@ -56,7 +57,8 @@ export async function POST(request: Request) {
       }).run();
     });
 
-    return ok(item, 201);
+    const { streamUrl, ...camera } = item;
+    return ok({ ...camera, hasStream: Boolean(streamUrl) }, 201);
   } catch (error) {
     if (error instanceof Error && /UNIQUE/.test(error.message)) {
       return fail("Camera code already exists in this zone", 409);
@@ -67,3 +69,6 @@ export async function POST(request: Request) {
     return parseJsonError(error);
   }
 }
+
+export const GET = adminEndpoint((_session, ...args: Parameters<typeof handleGET>) => handleGET(...args));
+export const POST = adminEndpoint((_session, ...args: Parameters<typeof handlePOST>) => handlePOST(...args), { audit: "camera.create" });

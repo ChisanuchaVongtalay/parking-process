@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { DataTable, Status } from "./admin-ui";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -15,17 +18,29 @@ type ZoneItem = {
   description: string | null;
 };
 
-export function ZoneManager() {
+export function ZoneManager({ inventory }: { inventory: Record<string, { slots: number; known: number }> }) {
+  const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [error, setError] = useState(false);
   const [zones, setZones] = useState<ZoneItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ code: "", name: "", description: "" });
 
+  const filtered = zones.filter((zone) => [zone.name, zone.code].some((value) => value.toLowerCase().includes(search.trim().toLowerCase())));
+
   async function load() {
     setLoading(true);
-    const res = await fetch("/api/admin/zones", { cache: "no-store" });
-    const json = await res.json();
-    setZones(json.data ?? []);
-    setLoading(false);
+    setError(false);
+    try {
+      const res = await fetch("/api/admin/zones", { cache: "no-store" });
+      if (!res.ok) throw new Error();
+      const json = await res.json();
+      setZones(json.data ?? []);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -50,11 +65,14 @@ export function ZoneManager() {
 
     setForm({ code: "", name: "", description: "" });
     await load();
+    router.refresh();
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[360px_1fr]">
-      <Card>
+    <div>
+      <details className="admin-panel mb-4">
+        <summary className="cursor-pointer font-semibold text-primary">+ เพิ่มโซน</summary>
+        <Card className="mt-3 border-0 shadow-none">
         <CardHeader>
           <CardTitle>Create Zone</CardTitle>
         </CardHeader>
@@ -91,26 +109,27 @@ export function ZoneManager() {
           </Button>
         </CardContent>
       </Card>
+      </details>
 
       <Card>
         <CardHeader>
           <CardTitle>Zones</CardTitle>
         </CardHeader>
         <CardContent>
-          {loading ? <p className="text-sm text-slate-600">Loading...</p> : null}
-          <div className="space-y-2">
-            {zones.map((zone) => (
-              <div
-                key={zone.id}
-                className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm"
-              >
-                <p className="font-semibold text-tertiary">
-                  {zone.code} · {zone.name}
-                </p>
-                <p className="text-slate-600">{zone.description || "-"}</p>
-              </div>
-            ))}
-          </div>
+          <Input className="mb-3 max-w-sm" aria-label="ค้นหาโซน" placeholder="ค้นหาชื่อหรือรหัสโซน…" value={search} onChange={(event) => setSearch(event.target.value)} />
+          {error && <p role="alert" className="mb-3 text-primary">โหลดรายการโซนไม่สำเร็จ <button className="underline" onClick={load}>ลองอีกครั้ง</button></p>}
+          <DataTable headings={["Zone", "Description", "Logical slots", "Coverage", "Status", "Action"]}>
+            {filtered.map((zone) => {
+              const { known, slots } = inventory[zone.id] ?? { known: 0, slots: 0 };
+              return <tr key={zone.id}>
+                <td><span className="admin-code">{zone.code}</span><small>{zone.name}</small></td>
+                <td>{zone.description || "—"}</td><td>{slots}</td><td>{slots ? `${known} / ${slots}` : "—"}</td>
+                <td><Status tone={!known ? "neutral" : known < slots ? "warn" : "good"}>{!known ? "Unknown" : known < slots ? "Partial" : "Fresh"}</Status></td>
+                <td><Link className="admin-link" href={`/admin/zones/${zone.id}`}>ดูรายละเอียด</Link></td>
+              </tr>;
+            })}
+            {!filtered.length && <tr><td colSpan={6}>{loading ? "กำลังโหลด…" : error ? "ข้อมูลไม่พร้อมใช้งาน" : "ไม่พบโซน"}</td></tr>}
+          </DataTable>
         </CardContent>
       </Card>
     </div>

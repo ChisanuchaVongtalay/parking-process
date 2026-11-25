@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "MFU Smart Parking Admin",
-  description: "Calibration dashboard for parking camera configuration",
+  description: "Admin console for parking zones, CCTV calibration, and processor monitoring",
 };
 
 export default function RootLayout({

@@ -1,8 +1,10 @@
-import { ok, parseJsonError } from "@/lib/http";
+import { isStoredImagePath } from "@/lib/auth/protected-files";
+import { adminEndpoint } from "@/lib/auth/access";
+import { fail, ok, parseJsonError } from "@/lib/http";
 import { saveUploadedFile } from "@/lib/storage";
 import { runRuntimeProcessing } from "@/lib/runtime/run-pipeline";
 
-export async function POST(
+async function handlePOST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -31,6 +33,10 @@ export async function POST(
         snapshotPath?: string;
         capturedAt?: string;
       };
+      if (body.snapshotPath !== undefined &&
+          (typeof body.snapshotPath !== "string" || !isStoredImagePath(body.snapshotPath, "snapshots"))) {
+        return fail("Invalid snapshot path", 400);
+      }
       snapshotPath = body.snapshotPath;
       capturedAt = body.capturedAt;
     }
@@ -46,3 +52,5 @@ export async function POST(
     return parseJsonError(error);
   }
 }
+
+export const POST = adminEndpoint((_session, ...args: Parameters<typeof handlePOST>) => handlePOST(...args), { audit: "camera.process" });

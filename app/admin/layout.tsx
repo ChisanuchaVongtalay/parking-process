@@ -1,32 +1,33 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { SessionTimeout } from "@/components/admin/session-timeout";
+import { requireAdminPage } from "@/lib/auth/session";
+import { roleLabel } from "@/lib/auth/roles";
+import { AdminNavigation } from "@/components/admin/admin-navigation";
+import "./admin.css";
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const session = await requireAdminPage();
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-primary">MFU Smart Parking</h1>
-            <p className="text-sm text-slate-600">Admin Calibration Dashboard</p>
+    <div className="admin-shell">
+      <a href="#admin-content" className="admin-skip">ข้ามไปยังเนื้อหา</a>
+      <SessionTimeout expiresAt={session.expiresAt} />
+      <AdminNavigation role={session.role} />
+      <div className="admin-main">
+        <header className="admin-topbar flex-wrap gap-2">
+          <div><strong>MFU Smart Parking</strong><small>Admin Console · Parking Processor</small></div>
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <div className="min-w-0 text-right">
+              <strong className="block text-sm">{roleLabel[session.role]}</strong>
+              <Link href="/change-password" className="text-xs underline">เปลี่ยนรหัสผ่าน</Link>
+            </div>
+            <form method="post" action="/api/auth/logout">
+              <Button size="sm" variant="outline" type="submit">ออกจากระบบ</Button>
+            </form>
           </div>
-          <nav className="flex gap-4 text-sm font-medium">
-            <Link href="/admin/zones" className="text-tertiary hover:underline">
-              Zones
-            </Link>
-            <Link href="/admin/cameras" className="text-tertiary hover:underline">
-              Cameras
-            </Link>
-            <Link href="/admin/monitor" className="text-tertiary hover:underline">
-              Monitor
-            </Link>
-          </nav>
-        </div>
-      </header>
-      <main className="mx-auto max-w-7xl px-6 py-6">{children}</main>
+        </header>
+        <main className="admin-content" id="admin-content" tabIndex={-1}>{children}</main>
+      </div>
     </div>
   );
 }

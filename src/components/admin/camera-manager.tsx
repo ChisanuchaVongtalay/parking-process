@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Status } from "./admin-ui";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -20,12 +22,16 @@ type CameraItem = {
   zoneId: string;
   code: string;
   name: string;
-  streamUrl: string | null;
+  hasStream: boolean;
   isPrimary: boolean;
   isActive: boolean;
 };
 
-export function CameraManager() {
+export function CameraManager({ health }: { health: Record<string, string> }) {
+  const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [zones, setZones] = useState<ZoneItem[]>([]);
   const [cameras, setCameras] = useState<CameraItem[]>([]);
   const [selectedZone, setSelectedZone] = useState<string>("");
@@ -51,15 +57,23 @@ export function CameraManager() {
   }
 
   async function loadCameras(zoneId?: string) {
-    const query = zoneId ? `?zoneId=${zoneId}` : "";
-    const res = await fetch(`/api/admin/cameras${query}`, { cache: "no-store" });
-    const json = await res.json();
-    setCameras(json.data ?? []);
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const query = zoneId ? `?zoneId=${encodeURIComponent(zoneId)}` : "";
+      const res = await fetch(`/api/admin/cameras${query}`, { cache: "no-store" });
+      if (!res.ok) throw new Error();
+      const json = await res.json();
+      setCameras(json.data ?? []);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
     loadZones();
-    loadCameras();
   }, []);
 
   useEffect(() => {
@@ -100,6 +114,7 @@ export function CameraManager() {
       isActive: true,
     }));
     loadCameras(selectedZone || undefined);
+    router.refresh();
   }
 
   function csvEscape(value: string): string {
@@ -142,13 +157,13 @@ export function CameraManager() {
   }
 
   function exportCsv() {
-    const rows = cameras.map((camera) => {
+    const rows = filtered.map((camera) => {
       const zone = zones.find((z) => z.id === camera.zoneId);
       return [
         zone?.code ?? "",
         camera.code,
         camera.name,
-        camera.streamUrl ?? "",
+        "",
         camera.isPrimary ? "true" : "false",
         camera.isActive ? "true" : "false",
       ];
@@ -234,6 +249,7 @@ export function CameraManager() {
       }
 
       await loadCameras(selectedZone || undefined);
+      router.refresh();
       alert(
         `CSV import completed. success=${success}, failed=${failed}${
           failures.length ? ` (${failures.join(", ")})` : ""
@@ -247,9 +263,15 @@ export function CameraManager() {
     }
   }
 
+  const filtered = cameras.filter((camera) => [camera.code, camera.name].some((value) =>
+    value.toLowerCase().includes(search.trim().toLowerCase()),
+  ));
+
   return (
-    <div className="grid gap-5 lg:grid-cols-[420px_1fr]">
-      <Card>
+    <div>
+      <details className="admin-panel mb-4">
+        <summary className="cursor-pointer font-semibold text-primary">+ เพิ่มกล้อง</summary>
+        <Card className="mt-3 border-0 shadow-none">
         <CardHeader>
           <CardTitle>Add Camera</CardTitle>
         </CardHeader>
@@ -291,6 +313,8 @@ export function CameraManager() {
             <Label htmlFor="stream-url">Stream URL (optional)</Label>
             <Input
               id="stream-url"
+              type="password"
+              autoComplete="off"
               value={form.streamUrl}
               onChange={(e) => setForm((prev) => ({ ...prev, streamUrl: e.target.value }))}
               placeholder="rtsp://..."
@@ -321,12 +345,15 @@ export function CameraManager() {
           </Button>
         </CardContent>
       </Card>
+      </details>
 
       <Card>
         <CardHeader>
-          <CardTitle>Camera List</CardTitle>
+          <CardTitle>Camera inventory</CardTitle>
           <div className="flex flex-wrap items-center gap-2 pt-2">
+            <Input className="w-full sm:w-60" aria-label="ค้นหากล้อง" placeholder="ค้นหาชื่อหรือรหัสกล้อง…" value={search} onChange={(event) => setSearch(event.target.value)} />
             <select
+              aria-label="กรองตามโซน"
               className="h-10 w-72 rounded-md border border-slate-300 bg-white px-3 text-sm"
               value={selectedZone}
               onChange={(e) => setSelectedZone(e.target.value)}
@@ -360,8 +387,9 @@ export function CameraManager() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-auto rounded-md border border-slate-200">
-            <table className="w-full text-sm">
+          {loadError && <p role="alert" className="mb-3 text-primary">โหลดข้อมูลกล้องไม่สำเร็จ <button className="underline" onClick={() => loadCameras(selectedZone)}>ลองอีกครั้ง</button></p>}
+          <div className="admin-table-wrap" role="region" aria-label="Camera inventory" tabIndex={0}>
+            <table className="admin-table">
               <thead className="bg-slate-100 text-slate-700">
                 <tr>
                   <th className="px-3 py-2 text-left">Zone</th>
@@ -369,30 +397,33 @@ export function CameraManager() {
                   <th className="px-3 py-2 text-left">Camera Name</th>
                   <th className="px-3 py-2 text-left">Stream URL</th>
                   <th className="px-3 py-2 text-left">Primary</th>
-                  <th className="px-3 py-2 text-left">Active</th>
+                  <th className="px-3 py-2 text-left">Capture status</th>
                   <th className="px-3 py-2 text-left">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {cameras.map((camera) => (
+                {filtered.map((camera) => (
                   <tr key={camera.id} className="border-t border-slate-200">
                     <td className="px-3 py-2">{zoneMap.get(camera.zoneId) || camera.zoneId}</td>
                     <td className="px-3 py-2 font-medium text-tertiary">{camera.code}</td>
                     <td className="px-3 py-2">{camera.name}</td>
-                    <td className="px-3 py-2">{camera.streamUrl || "-"}</td>
+                    <td className="px-3 py-2">{camera.hasStream ? "Configured · ••••••••" : "—"}</td>
                     <td className="px-3 py-2">{camera.isPrimary ? "Yes" : "No"}</td>
-                    <td className="px-3 py-2">{camera.isActive ? "Yes" : "No"}</td>
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2"><Status tone={health[camera.id] === "Fresh" ? "good" : health[camera.id] === "Error" ? "bad" : health[camera.id] === "Stale" ? "warn" : "neutral"}>{health[camera.id] ?? (camera.isActive ? "Unknown" : "Disabled")}</Status></td>
+                    <td className="space-y-1 px-3 py-2">
                       <Button asChild size="sm" variant="tertiary">
-                        <Link href={`/admin/cameras/${camera.id}/calibration`}>Open Calibration</Link>
+                        <Link href={`/admin/cameras/${camera.id}`}>ดูรายละเอียด</Link>
+                      </Button>
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/admin/cameras/${camera.id}/edit`}>แก้ไข</Link>
                       </Button>
                     </td>
                   </tr>
                 ))}
-                {!cameras.length ? (
+                {!filtered.length ? (
                   <tr>
                     <td className="px-3 py-3 text-slate-500" colSpan={7}>
-                      No cameras found.
+                      {loading ? "กำลังโหลด…" : loadError ? "ข้อมูลไม่พร้อมใช้งาน" : "ไม่พบกล้อง"}
                     </td>
                   </tr>
                 ) : null}

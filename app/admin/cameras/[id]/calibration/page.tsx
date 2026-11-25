@@ -1,3 +1,6 @@
+import { requireAdminPage } from "@/lib/auth/session";
+import { PageHeading } from "@/components/admin/admin-ui";
+
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 
@@ -12,6 +15,7 @@ export default async function CameraCalibrationPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireAdminPage();
   const { id } = await params;
   const camera = await db.query.cameras.findFirst({ where: eq(cameras.id, id) });
   if (!camera) {
@@ -25,10 +29,9 @@ export default async function CameraCalibrationPage({
 
   return (
     <div className="space-y-2">
-      <h2 className="text-2xl font-semibold">Calibration Workspace</h2>
-      <p className="text-sm text-slate-600">
-        Draw slots, tune parameters, run test detection, and export runtime config.
-      </p>
+      <PageHeading title={`Calibration Editor · ${camera.code}`}
+        description="กำหนดขอบเขตช่องจอด ปรับ Pixel Difference และทดสอบก่อนเปิดนับช่อง"
+        parent={{ href: `/admin/cameras/${camera.id}`, label: "Camera Detail" }} />
 
       <CalibrationWorkspace
         initialCamera={{

@@ -1,8 +1,9 @@
+import { adminEndpoint } from "@/lib/auth/access";
 import { ok, parseJsonError } from "@/lib/http";
 import { calibrationUpdateSchema } from "@/lib/validation";
 import { getOrCreateCalibration, updateCalibration } from "@/services/calibration";
 
-export async function GET(
+async function handleGET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -15,7 +16,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
+async function handlePUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -28,3 +29,6 @@ export async function PUT(
     return parseJsonError(error);
   }
 }
+
+export const GET = adminEndpoint((_session, ...args: Parameters<typeof handleGET>) => handleGET(...args));
+export const PUT = adminEndpoint((_session, ...args: Parameters<typeof handlePUT>) => handlePUT(...args), { audit: "camera.calibration_update" });

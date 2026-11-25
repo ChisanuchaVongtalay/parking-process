@@ -1,3 +1,4 @@
+import { adminEndpoint } from "@/lib/auth/access";
 import fs from "node:fs/promises";
 
 import { eq } from "drizzle-orm";
@@ -22,7 +23,7 @@ function parseOptionalJsonField<T>(field: FormDataEntryValue | null, label: stri
   }
 }
 
-export async function POST(
+async function handlePOST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -104,3 +105,5 @@ export async function POST(
     return parseJsonError(error);
   }
 }
+
+export const POST = adminEndpoint((_session, ...args: Parameters<typeof handlePOST>) => handlePOST(...args), { audit: "camera.calibration_test" });

@@ -1,3 +1,4 @@
+import { adminEndpoint } from "@/lib/auth/access";
 import { desc } from "drizzle-orm";
 
 import { db } from "@/db";
@@ -6,14 +7,14 @@ import { fail, ok, parseJsonError } from "@/lib/http";
 import { createId } from "@/lib/id";
 import { zoneCreateSchema } from "@/lib/validation";
 
-export async function GET() {
+async function handleGET() {
   const data = await db.query.zones.findMany({
     orderBy: [desc(zones.createdAt)],
   });
   return ok(data);
 }
 
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   try {
     const payload = zoneCreateSchema.parse(await request.json());
 
@@ -36,3 +37,6 @@ export async function POST(request: Request) {
     return parseJsonError(error);
   }
 }
+
+export const GET = adminEndpoint((_session, _request: Request) => handleGET());
+export const POST = adminEndpoint((_session, ...args: Parameters<typeof handlePOST>) => handlePOST(...args), { audit: "zone.create" });

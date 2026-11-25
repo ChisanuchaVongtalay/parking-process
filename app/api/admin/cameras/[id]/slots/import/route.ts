@@ -1,8 +1,9 @@
+import { adminEndpoint } from "@/lib/auth/access";
 import { fail, ok, parseJsonError } from "@/lib/http";
 import { slotBulkSchema } from "@/lib/validation";
 import { replaceCameraSlots } from "@/services/camera-slots";
 
-export async function POST(
+async function handlePOST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -24,3 +25,5 @@ export async function POST(
     return parseJsonError(error);
   }
 }
+
+export const POST = adminEndpoint((_session, ...args: Parameters<typeof handlePOST>) => handlePOST(...args), { audit: "camera.slots_import" });

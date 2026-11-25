@@ -37,7 +37,7 @@ export function ZoneSummaryPanel(props: {
         {zones.map((zone) => {
           const selected = selectedZoneId === zone.zoneId;
           return (
-            <button key={zone.zoneId} className="text-left" onClick={() => onSelectZone(zone.zoneId)}>
+            <button key={zone.zoneId} className="text-left" aria-pressed={selected} onClick={() => onSelectZone(zone.zoneId)}>
               <Card className={selected ? "border-tertiary ring-1 ring-tertiary" : ""}>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base text-tertiary">
@@ -45,11 +45,13 @@ export function ZoneSummaryPanel(props: {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-1 text-sm">
-                  <p>Total: {zone.summary.total}</p>
-                  <p className="text-primary">Occupied: {zone.summary.occupied}</p>
-                  <p className="text-success">Free: {zone.summary.free}</p>
+                  {zone.lastUpdated ? <>
+                    <p>Camera observations: {zone.summary.total}</p>
+                    <p className="text-primary">Occupied: {zone.summary.occupied}</p>
+                    <p className="text-success">Free: {zone.summary.free}</p>
+                  </> : <p>Unknown · ยังไม่มีผลประมวลผลล่าสุด</p>}
                   <p className="text-xs text-slate-500">
-                    Last updated: {zone.lastUpdated ? new Date(zone.lastUpdated).toLocaleString() : "-"}
+                    Last capture: {zone.lastUpdated ? new Date(zone.lastUpdated).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }) : "—"}
                   </p>
                 </CardContent>
               </Card>

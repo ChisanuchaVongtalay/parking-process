@@ -1,3 +1,5 @@
+import { isDownloadableDataFile } from "@/lib/auth/protected-files";
+import { adminEndpoint } from "@/lib/auth/access";
 import fs from "node:fs/promises";
 
 import { fail } from "@/lib/http";
@@ -10,13 +12,14 @@ function contentType(filePath: string): string {
   return "application/octet-stream";
 }
 
-export async function GET(
+async function handleGET(
   _request: Request,
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   try {
     const { path } = await params;
     const relativePath = path.join("/");
+    if (!isDownloadableDataFile(relativePath)) return fail("File not found", 404);
     const absolutePath = resolveDataPath(relativePath);
     const data = await fs.readFile(absolutePath);
 
@@ -24,10 +27,13 @@ export async function GET(
       status: 200,
       headers: {
         "content-type": contentType(absolutePath),
-        "cache-control": "no-store",
+        "cache-control": "private, no-store",
+        "x-content-type-options": "nosniff",
       },
     });
   } catch {
     return fail("File not found", 404);
   }
 }
+
+export const GET = adminEndpoint((_session, ...args: Parameters<typeof handleGET>) => handleGET(...args));

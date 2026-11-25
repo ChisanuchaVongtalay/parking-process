@@ -18,8 +18,9 @@ export const cameraCreateSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export const cameraPatchSchema = cameraCreateSchema.partial().extend({
-  zoneId: z.string().min(1).optional(),
+export const cameraPatchSchema = cameraCreateSchema.omit({ isPrimary: true, isActive: true }).partial().extend({
+  isPrimary: z.boolean().optional(),
+  isActive: z.boolean().optional(),
 });
 
 export const pointSchema = z.object({

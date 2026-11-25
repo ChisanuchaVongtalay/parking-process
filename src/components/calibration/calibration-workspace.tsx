@@ -517,8 +517,8 @@ export function CalibrationWorkspace({
   const selected = slots.find((slot) => slot.id === selectedSlotId) ?? null;
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[300px_1fr_360px]">
-      <Card className="order-2 xl:order-1">
+    <div className="admin-calibration-grid">
+      <Card className="admin-calibration-slots">
         <CardHeader>
           <CardTitle>Slot Management</CardTitle>
           <div className="flex gap-2">
@@ -566,7 +566,7 @@ export function CalibrationWorkspace({
         </CardContent>
       </Card>
 
-      <Card className="order-1 xl:order-2">
+      <Card className="admin-calibration-canvas">
         <CardHeader>
           <CardTitle>
             {camera.code} · {camera.name}
@@ -846,7 +846,7 @@ export function CalibrationWorkspace({
         </CardContent>
       </Card>
 
-      <Card className="order-3">
+      <Card className="admin-calibration-controls">
         <CardHeader>
           <CardTitle>Calibration Controls</CardTitle>
           <div className="flex gap-2">

@@ -66,3 +66,15 @@ npm run worker:snapshot
 Set the options in `.env.example` in the process environment (the worker does not automatically load `.env` files). `DATA_DIR` must point to the same persistent directory for the web app, migration, and worker. Set `SNAPSHOT_INTERVAL_SECONDS` (default 60), `SNAPSHOT_TIMEOUT_SECONDS` (20), `SNAPSHOT_CONCURRENCY` (4), and `SNAPSHOT_RTSP_TRANSPORT` (`tcp` or `udp`) as needed. `SNAPSHOT_MAX_AGE_SECONDS` defaults to 900 seconds and should be set on the web app; observations older than this are excluded from current public summaries. Zone totals may therefore be incomplete when cameras are offline. Capture timestamps and failures are stored in `snapshot_capture_status`.
 
 Run only one worker instance against a given set of cameras and shared storage. The local adapter requires a shared persistent volume if processes run on different hosts; remote storage is not implemented. If capture fails, check FFmpeg availability, network access to the camera, the RTSP URL and camera status. Avoid sharing RTSP credentials and restrict access to the admin application and CCTV footage. For local verification run `npm run test:snapshot`.
+
+## Admin Console sign-in
+
+Run `npm run db:migrate` before starting the web app. For the first local account, run the following with the intended university login email and a new, private path outside the repository. The command writes the temporary password to that file and only provisions the first Super Admin.
+
+```sh
+npm run admin:bootstrap -- owner@landuan.mfu.ac.th /private/path/mfu-admin-password.txt
+```
+
+For the first CapRover deployment, set `PARKING_SUPER_ADMIN_EMAIL`, `PARKING_SUPER_ADMIN_PASSWORD` (a unique temporary password of 16–256 characters), and `PARKING_ADMIN_ORIGIN` (the public HTTPS origin). Keep the app's existing persistent `DATA_DIR` mount. The container runs migrations and provisions the first Super Admin during startup. Remove the bootstrap password from deployment settings after setup. Each account sets its own password at first sign-in.
+
+To hand over the console, create an account under **Admin Management** with the **Super Admin** role. Give the new owner their temporary password privately. Once the owner signs in and verifies access, they can disable the outgoing account. Role changes, password resets and disabled accounts revoke existing sessions. The default session lifetime is 30 minutes from sign-in and is configurable in **System Settings** for subsequent sign-ins. Public parking status endpoints remain available separately from the Admin Console.

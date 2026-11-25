@@ -8,10 +8,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#A01D22",
-        secondary: "#C5A059",
-        tertiary: "#005979",
-        neutral: "#F8F9FA",
+        primary: "#7D000F",
+        secondary: "#775A19",
+        tertiary: "#775A19",
+        neutral: "#FAF9F6",
         success: "#22C55E",
       },
       borderRadius: {

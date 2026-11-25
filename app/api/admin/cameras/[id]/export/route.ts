@@ -1,7 +1,8 @@
+import { adminEndpoint } from "@/lib/auth/access";
 import { ok, parseJsonError } from "@/lib/http";
 import { exportCameraConfig } from "@/services/camera-export";
 
-export async function POST(
+async function handlePOST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -14,3 +15,5 @@ export async function POST(
     return parseJsonError(error);
   }
 }
+
+export const POST = adminEndpoint((_session, ...args: Parameters<typeof handlePOST>) => handlePOST(...args), { audit: "camera.config_export" });

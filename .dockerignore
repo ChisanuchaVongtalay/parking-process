@@ -7,3 +7,4 @@ Dockerfile
 captain-definition
 data
 *.md
+.env.super-admin-initial

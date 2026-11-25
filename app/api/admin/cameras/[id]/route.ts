@@ -1,11 +1,13 @@
-import { eq } from "drizzle-orm";
+import { adminEndpoint } from "@/lib/auth/access";
+import { and, eq, isNotNull } from "drizzle-orm";
 
 import { db } from "@/db";
-import { cameras } from "@/db/schema";
-import { fail, ok, parseJsonError } from "@/lib/http";
+import { cameras, cameraSlots, zones } from "@/db/schema";
+import { fail, ok } from "@/lib/http";
+import { ZodError } from "zod";
 import { cameraPatchSchema } from "@/lib/validation";
 
-export async function GET(
+async function handleGET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -14,10 +16,11 @@ export async function GET(
   if (!camera) {
     return fail("Camera not found", 404);
   }
-  return ok(camera);
+  const { streamUrl, ...safeCamera } = camera;
+  return ok({ ...safeCamera, hasStream: Boolean(streamUrl) });
 }
 
-export async function PATCH(
+async function handlePATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -25,26 +28,40 @@ export async function PATCH(
     const { id } = await params;
     const payload = cameraPatchSchema.parse(await request.json());
 
-    const existing = await db.query.cameras.findFirst({ where: eq(cameras.id, id) });
-    if (!existing) {
-      return fail("Camera not found", 404);
-    }
+    return db.transaction((tx) => {
+      const existing = tx.query.cameras.findFirst({ where: eq(cameras.id, id) }).sync();
+      if (!existing) return fail("Camera not found", 404);
 
-    const update = {
-      zoneId: payload.zoneId ?? existing.zoneId,
-      code: payload.code ?? existing.code,
-      name: payload.name ?? existing.name,
-      streamUrl: payload.streamUrl ?? existing.streamUrl,
-      isPrimary: payload.isPrimary ?? existing.isPrimary,
-      isActive: payload.isActive ?? existing.isActive,
-      updatedAt: new Date(),
-    };
+      if (payload.zoneId && payload.zoneId !== existing.zoneId) {
+        const zone = tx.query.zones.findFirst({ where: eq(zones.id, payload.zoneId) }).sync();
+        if (!zone) return fail("Zone not found", 404);
 
-    await db.update(cameras).set(update).where(eq(cameras.id, id));
-    const camera = await db.query.cameras.findFirst({ where: eq(cameras.id, id) });
+        const mappedSlot = tx.query.cameraSlots.findFirst({
+          where: and(eq(cameraSlots.cameraId, id), isNotNull(cameraSlots.logicalSlotId)),
+        }).sync();
+        if (mappedSlot) {
+          return fail("ยกเลิกการผูก Logical Slot ของกล้องกับโซนเดิมก่อนย้ายโซน", 409);
+        }
+      }
 
-    return ok(camera);
+      const updated = tx.update(cameras)
+        .set({ ...payload, updatedAt: new Date() })
+        .where(eq(cameras.id, id))
+        .returning().get();
+
+      const { streamUrl, ...safeCamera } = updated;
+      return ok({ ...safeCamera, hasStream: Boolean(streamUrl) });
+    });
   } catch (error) {
-    return parseJsonError(error);
+    if (error instanceof ZodError || error instanceof SyntaxError) {
+      return fail("ข้อมูลกล้องไม่ถูกต้อง กรุณาตรวจสอบข้อมูลและ Stream URL", 422);
+    }
+    if (error instanceof Error && /UNIQUE constraint failed/.test(error.message)) {
+      return fail("Camera Code นี้มีอยู่แล้วในโซนที่เลือก", 409);
+    }
+    return fail("บันทึกข้อมูลกล้องไม่สำเร็จ", 500);
   }
 }
+
+export const GET = adminEndpoint((_session, ...args: Parameters<typeof handleGET>) => handleGET(...args));
+export const PATCH = adminEndpoint((_session, ...args: Parameters<typeof handlePATCH>) => handlePATCH(...args), { audit: "camera.update" });
