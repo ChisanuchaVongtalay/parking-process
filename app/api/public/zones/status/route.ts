@@ -10,6 +10,9 @@ export async function GET() {
       total_slots: zone.summary.total,
       free_slots: zone.summary.free,
       occupied_slots: zone.summary.occupied,
+      unknown_slots: zone.summary.unknown,
+      car: zone.summary.car,
+      motorcycle: zone.summary.motorcycle,
       last_updated: zone.lastUpdated,
     }));
 

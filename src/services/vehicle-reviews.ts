@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { query, queryRow, writeTransaction } from "@/db/client";
+import { queryRow, queryRows, writeTransaction } from "@/db/client";
 import { CLOUD_FILE_LIMIT, writeDatabaseFile } from "@/lib/storage";
 
 export const vehicleReviewSchema = z.object({
@@ -45,6 +45,10 @@ export function userReview(review: Review) {
 
 export function getReview(id: string) {
   return queryRow<Review>(`SELECT ${reviewColumns} FROM vehicle_reviews WHERE id = ?`, [id]);
+}
+
+export function listApplicantReviews(applicantId: string) {
+  return queryRows<Review>(`SELECT ${reviewColumns} FROM vehicle_reviews WHERE applicant_id = ? ORDER BY created_at DESC, id`, [applicantId]);
 }
 
 export async function addVehicleReview(submission: Submission, file: File) {

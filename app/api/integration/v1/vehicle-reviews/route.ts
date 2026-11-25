@@ -1,6 +1,19 @@
 import { fail, ok } from "@/lib/http";
 import { integrationAccess } from "@/lib/integration-access";
-import { addVehicleReview, userReview, vehicleReviewSchema } from "@/services/vehicle-reviews";
+import { addVehicleReview, listApplicantReviews, userReview, vehicleReviewSchema } from "@/services/vehicle-reviews";
+
+export async function GET(request: Request) {
+  const denied = integrationAccess(request);
+  if (denied) return denied;
+  const applicantId = new URL(request.url).searchParams.get("applicantId");
+  if (!applicantId?.trim() || applicantId.length > 120) return fail("A valid applicantId is required", 422);
+  const items = (await listApplicantReviews(applicantId)).map((review) => ({
+    ...userReview(review), plate: review.plate, province: review.province, brand: review.brand, vehicleType: review.vehicleType,
+  }));
+  const response = ok({ items });
+  response.headers.set("Cache-Control", "private, no-store");
+  return response;
+}
 
 export async function POST(request: Request) {
   const denied = integrationAccess(request);

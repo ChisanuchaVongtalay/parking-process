@@ -94,12 +94,13 @@ Configure the same high-entropy `PARKING_USER_API_KEY` (32+ characters) on the A
 | Endpoint | Request | Response |
 | --- | --- | --- |
 | `POST /api/integration/v1/vehicle-reviews` | `multipart/form-data` with stable submission `id`, `applicantId`, `vehicleId`, `plate`, `province`, `brand`, `vehicleType` and `evidence` file. | `201` creates a pending review. An identical retry returns `200`. Reusing the ID with different data returns `409`. |
+| `GET /api/integration/v1/vehicle-reviews?applicantId={id}` | Use the signed-in applicant's ID. | `{data: {items}}` lists that applicant's vehicles and review statuses without exposing evidence. |
 | `GET /api/integration/v1/vehicle-reviews/{id}?applicantId={id}` | Use the same applicant and submission IDs. | `{data: {id, vehicleId, status, version, reason, createdAt, reviewedAt}}`. An unknown or mismatched applicant returns `404`. |
 | `GET /api/integration/v1/booking-policy` | Backend key. | `{data: {version, effectiveAt, student, staff}}` or `{data: null}` if no policy is effective. Each role contains `maxActive`, `maxDurationHours` and `advanceDays`. The booking backend enforces these limits. |
 
 Vehicle types are `Sedan`, `Hatchback`, `SUV`, `Pickup`, `Van`, `Motorcycle`, and `Other`. Evidence accepts JPEG, PNG and PDF up to 3 MiB. It is only available to signed-in Admin Console reviewers. A rejected review includes the reviewer’s reason, and a second concurrent decision cannot overwrite the first. The User Web can read the status after submission using the GET endpoint. Timestamp fields use Unix milliseconds.
 
-Public parking feeds remain available under `/api/public/zones/status`, `/api/public/zones`, and `/api/public/zones/{zoneId}/summary`. A physical availability estimate does not resolve booking eligibility.
+Use `GET /api/public/zones/status` for the User Web. Each item has `zone`, `total_slots`, `free_slots`, `occupied_slots`, `unknown_slots`, and `last_updated`. Counts use configured active logical slots. An overlapping camera view does not add another slot, and stale, unseen, or conflicting observations count as unknown. `last_updated` is an ISO 8601 timestamp or `null` when the zone has no fresh observations. `GET /api/public/zones` and `GET /api/public/zones/{zoneId}/summary` use the same counts. A physical availability estimate does not resolve booking eligibility.
 
 ## Parking operations on Vercel
 

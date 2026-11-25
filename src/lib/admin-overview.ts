@@ -53,7 +53,12 @@ export async function readParkingOverview() {
     const slots = slotsByZone.get(zone.id) ?? [];
     const free = slots.filter((slot) => slot.status === "Free").length;
     const occupied = slots.filter((slot) => slot.status === "Occupied").length;
-    return { ...zone, slots, occupied, free, unknown: slots.length - free - occupied };
+    const lastObservation = slots.reduce((mostRecent, slot) => {
+      const observedAt = Number(slot.observedAt);
+      return observedAt >= cutoff ? Math.max(mostRecent, observedAt) : mostRecent;
+    }, 0);
+    const lastUpdated = lastObservation ? new Date(lastObservation).toISOString() : null;
+    return { ...zone, slots, occupied, free, unknown: slots.length - free - occupied, lastUpdated };
   });
 
   return {

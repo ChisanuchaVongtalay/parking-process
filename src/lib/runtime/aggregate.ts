@@ -1,4 +1,5 @@
 import { queryRow, queryRows } from "@/db/client";
+import { readParkingOverview } from "@/lib/admin-overview";
 
 const maxAgeSeconds = Number(process.env.SNAPSHOT_MAX_AGE_SECONDS || 900);
 const freshnessCutoff = () => Date.now() - (Number.isFinite(maxAgeSeconds) && maxAgeSeconds > 0 ? maxAgeSeconds : 900) * 1000;
@@ -7,6 +8,9 @@ export type ZoneSummary = {
   total: number;
   occupied: number;
   free: number;
+  unknown: number;
+  car: { free: number; occupied: number };
+  motorcycle: { free: number; occupied: number };
 };
 
 export type PublicZoneSummaryRow = {
@@ -136,63 +140,27 @@ export async function getLatestCameraSummaries(zoneId?: string): Promise<PublicC
 }
 
 export async function getZonesWithLatestSummary(): Promise<PublicZoneSummaryRow[]> {
-  const rows = await queryRows(`
-      WITH latest_per_camera AS (
-        SELECT c.id AS camera_id, MAX(co.captured_at) AS max_captured_at
-        FROM cameras c
-        LEFT JOIN camera_observations co ON co.camera_id = c.id AND co.captured_at >= ${freshnessCutoff()}
-        GROUP BY c.id
-      ),
-      latest_observations AS (
-        SELECT
-          co.camera_id,
-          co.occupied_count,
-          co.free_count,
-          co.total_count,
-          co.captured_at
-        FROM camera_observations co
-        INNER JOIN latest_per_camera lpc
-          ON lpc.camera_id = co.camera_id
-         AND lpc.max_captured_at = co.captured_at
-      )
-      SELECT
-        z.id AS zoneId,
-        z.code AS zoneCode,
-        z.name AS zoneName,
-        COALESCE(SUM(lo.total_count), 0) AS total,
-        COALESCE(SUM(lo.occupied_count), 0) AS occupied,
-        COALESCE(SUM(lo.free_count), 0) AS free,
-        MAX(lo.captured_at) AS lastCapturedAt
-      FROM zones z
-      LEFT JOIN cameras c ON c.zone_id = z.id
-      LEFT JOIN latest_observations lo ON lo.camera_id = c.id
-      GROUP BY z.id, z.code, z.name
-      ORDER BY z.code ASC
-    `, []) as Array<{
-      zoneId: string;
-      zoneCode: string;
-      zoneName: string;
-      total: number;
-      occupied: number;
-      free: number;
-      lastCapturedAt: number | null;
-    }>;
-
-  return rows.map((casted) => {
-    return {
-      zoneId: casted.zoneId,
-      zoneCode: casted.zoneCode,
-      zoneName: casted.zoneName,
-      lastUpdated: casted.lastCapturedAt
-        ? new Date(Number(casted.lastCapturedAt)).toISOString()
-        : null,
-      summary: {
-        total: Number(casted.total),
-        occupied: Number(casted.occupied),
-        free: Number(casted.free),
+  const { zones } = await readParkingOverview();
+  return zones.map((zone) => ({
+    zoneId: zone.id,
+    zoneCode: zone.code,
+    zoneName: zone.name,
+    lastUpdated: zone.lastUpdated,
+    summary: {
+      total: zone.slots.length,
+      occupied: zone.occupied,
+      free: zone.free,
+      unknown: zone.unknown,
+      car: {
+        free: zone.slots.filter((slot) => slot.vehicleType === "car" && slot.status === "Free").length,
+        occupied: zone.slots.filter((slot) => slot.vehicleType === "car" && slot.status === "Occupied").length,
       },
-    };
-  });
+      motorcycle: {
+        free: zone.slots.filter((slot) => slot.vehicleType === "motorcycle" && slot.status === "Free").length,
+        occupied: zone.slots.filter((slot) => slot.vehicleType === "motorcycle" && slot.status === "Occupied").length,
+      },
+    },
+  }));
 }
 
 export async function getCameraLatestSlotObservations(
@@ -234,38 +202,6 @@ export async function getCameraLatestSlotObservations(
 }
 
 export async function getZoneSummary(zoneId: string): Promise<ZoneSummary | null> {
-  const row = await queryRow(`
-      WITH latest_per_camera AS (
-        SELECT c.id AS camera_id, MAX(co.captured_at) AS max_captured_at
-        FROM cameras c
-        LEFT JOIN camera_observations co ON co.camera_id = c.id AND co.captured_at >= ${freshnessCutoff()}
-        WHERE c.zone_id = ?
-        GROUP BY c.id
-      ),
-      latest_observations AS (
-        SELECT
-          co.camera_id,
-          co.occupied_count,
-          co.free_count,
-          co.total_count
-        FROM camera_observations co
-        INNER JOIN latest_per_camera lpc
-          ON lpc.camera_id = co.camera_id
-         AND lpc.max_captured_at = co.captured_at
-      )
-      SELECT
-        COALESCE(SUM(lo.total_count), 0) AS total,
-        COALESCE(SUM(lo.occupied_count), 0) AS occupied,
-        COALESCE(SUM(lo.free_count), 0) AS free
-      FROM cameras c
-      LEFT JOIN latest_observations lo ON lo.camera_id = c.id
-      WHERE c.zone_id = ?
-    `, [zoneId, zoneId]) as { total: number; occupied: number; free: number } | undefined;
-  if (!row) return null;
-
-  return {
-    total: Number(row.total),
-    occupied: Number(row.occupied),
-    free: Number(row.free),
-  };
+  const zones = await getZonesWithLatestSummary();
+  return zones.find((zone) => zone.zoneId === zoneId)?.summary ?? null;
 }
