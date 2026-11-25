@@ -16,9 +16,10 @@ export async function POST(request: Request) {
   if (!isAdminEmail(email)) return fail("กรุณาใช้อีเมล @lamduan.mfu.ac.th", 422);
   if (!(await allowLoginAttempt(email))) return fail("ลองเข้าสู่ระบบหลายครั้งเกินไป กรุณารอ 15 นาที", 429);
 
-  const account = await authRow<{ id: string; passwordHash: string }>(
-    "SELECT id, password_hash AS passwordHash FROM admin_accounts WHERE email = ? AND active = 1", [email],
-  );
+  // Read credentials from the writer, including immediately after a password change.
+  const account = await authWrite((transaction) => authRow<{ id: string; passwordHash: string }>(
+    "SELECT id, password_hash AS passwordHash FROM admin_accounts WHERE email = ? AND active = 1", [email], transaction,
+  ));
   const valid = await verifyPassword(input.data.password, account?.passwordHash);
   if (!valid || !account) return fail("อีเมลหรือรหัสผ่านไม่ถูกต้อง", 401);
 

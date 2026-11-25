@@ -54,13 +54,19 @@ async function setup() {
   const authToken = process.env.TURSO_AUTH_TOKEN;
   if (!url || !authToken) throw new Error("Set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN for this deployment.");
 
+  const args = process.argv.slice(2);
+  const mode = args[0] ?? "migrate";
+  if (args.length > 1 || !["migrate", "--bootstrap", "--recover"].includes(mode)) {
+    throw new Error("Use db:setup:vercel with no arguments, --bootstrap, or --recover.");
+  }
+
   const email = normalizeAdminEmail(process.env.PARKING_SUPER_ADMIN_EMAIL ?? "");
   const password = process.env.PARKING_SUPER_ADMIN_PASSWORD;
-  const resetId = process.env.VERCEL_ENV === "production" ? process.env.PARKING_SUPER_ADMIN_RESET_ID : undefined;
-  if (resetId && !/^[a-z0-9_-]{8,64}$/i.test(resetId)) {
+  const resetId = process.env.PARKING_SUPER_ADMIN_RESET_ID;
+  if (mode === "--recover" && (!resetId || !/^[a-z0-9_-]{8,64}$/i.test(resetId))) {
     throw new Error("PARKING_SUPER_ADMIN_RESET_ID must contain 8–64 letters, digits, hyphens or underscores.");
   }
-  const resetMarker = resetId ? `admin-reset:${resetId}` : undefined;
+  const resetMarker = mode === "--recover" ? `admin-reset:${resetId}` : undefined;
   const client = createClient({ url, authToken });
   try {
     await client.execute("CREATE TABLE IF NOT EXISTS __migrations (id TEXT PRIMARY KEY NOT NULL, applied_at TEXT NOT NULL)");
@@ -75,25 +81,29 @@ async function setup() {
         await transaction.executeMultiple(schema.replace(/^\uFEFF/, ""));
         await markApplied(transaction, migration);
       }
-      const existing = await transaction.execute("SELECT 1 FROM admin_accounts WHERE role = 'super_admin' LIMIT 1");
-      const hasSuperAdmin = existing.rows.length > 0;
-      let message = "Turso authentication schema and Super Admin are ready.";
-      if (!hasSuperAdmin) {
-        if (resetMarker && await alreadyApplied(transaction, resetMarker)) {
-          throw new Error("This password recovery ID has already been used. Use a new recovery ID to initialize an account.");
+      let message = "Turso migrations completed. Admin credentials were not changed.";
+      if (mode === "--bootstrap") {
+        const accounts = await transaction.execute("SELECT 1 FROM admin_accounts LIMIT 1");
+        if (accounts.rows.length) {
+          message = "Admin accounts already exist. Bootstrap left them unchanged.";
+        } else {
+          if (!isAdminEmail(email) || !validTemporaryPassword(password)) {
+            throw new Error("Bootstrap requires PARKING_SUPER_ADMIN_EMAIL (@lamduan.mfu.ac.th) and PARKING_SUPER_ADMIN_PASSWORD (16–256 characters).");
+          }
+          await transaction.execute({
+            sql: "INSERT INTO admin_accounts (id, email, password_hash, role, created_at) VALUES (?, ?, ?, 'super_admin', ?)",
+            args: [randomUUID(), email, await hashPassword(password), Date.now()],
+          });
+          await audit(transaction, "account.bootstrap.super_admin", email, 201);
+          message = "First Super Admin created.";
         }
-        if (!isAdminEmail(email) || !validTemporaryPassword(password)) {
-          throw new Error("First deploy: set PARKING_SUPER_ADMIN_EMAIL (@lamduan.mfu.ac.th) and PARKING_SUPER_ADMIN_PASSWORD (16–256 characters).");
-        }
-        await transaction.execute({
-          sql: "INSERT INTO admin_accounts (id, email, password_hash, role, created_at) VALUES (?, ?, ?, 'super_admin', ?)",
-          args: [randomUUID(), email, await hashPassword(password), Date.now()],
-        });
-        await audit(transaction, "account.bootstrap.super_admin", email, 201);
-        if (resetMarker) await markApplied(transaction, resetMarker);
-        message = "Turso authentication schema initialized and first Super Admin created.";
       } else if (resetMarker && await resetSuperAdmin(transaction, resetMarker, email, password)) {
         message = "Super Admin temporary password reset successfully.";
+      } else if (mode === "migrate" && process.env.VERCEL_ENV === "production") {
+        const activeOwner = await transaction.execute("SELECT 1 FROM admin_accounts WHERE role = 'super_admin' AND active = 1 LIMIT 1");
+        if (!activeOwner.rows.length) {
+          throw new Error("No active Super Admin on Production Turso. Check the database connection or explicitly bootstrap the initial account.");
+        }
       }
       await transaction.commit();
       console.log(message);

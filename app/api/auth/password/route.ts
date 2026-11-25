@@ -39,6 +39,14 @@ export async function POST(request: Request) {
   });
 
   if (!updated) return fail("ข้อมูลบัญชีเปลี่ยนแปลง กรุณาเข้าสู่ระบบใหม่", 409);
+  const persisted = await authWrite((transaction) => authRow<{ confirmed: number }>(
+    "SELECT 1 AS confirmed FROM admin_accounts WHERE id = ? AND active = 1 AND password_hash = ? AND must_change_password = 0",
+    [session.id, passwordHash], transaction,
+  ));
+  if (!persisted?.confirmed) {
+    return fail("ยืนยันรหัสผ่านใหม่ไม่ได้ กรุณาเข้าสู่ระบบใหม่หรือติดต่อผู้ดูแล", 503);
+  }
+
   const response = NextResponse.json({ data: { next: "/login?changed=1" } });
   clearSessionCookie(response);
   return response;

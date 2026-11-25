@@ -81,13 +81,11 @@ To hand over the console, create an account under **Admin Management** with the 
 
 ## Vercel deployment
 
-Connect a Turso database to the target Vercel environment. Set `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `PARKING_SUPER_ADMIN_EMAIL` (an address at `lamduan.mfu.ac.th`), and `PARKING_SUPER_ADMIN_PASSWORD` (a unique temporary password of 16–256 characters). For a stable domain, set `PARKING_ADMIN_ORIGIN` to its HTTPS origin. Leave it unset when using changing Vercel Preview URLs.
+Connect a Turso database to the target Vercel environment and set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`. For a stable domain, set `PARKING_ADMIN_ORIGIN` to its HTTPS origin. Leave it unset when using changing Vercel Preview URLs. Use a separate database for a test environment.
 
-The repository's `vercel.json` build command applies the tracked migrations and creates the first Super Admin on Turso. After the initial deployment, sign in at `/login`, change the temporary password, then remove `PARKING_SUPER_ADMIN_PASSWORD` from Vercel. Rebuilding leaves existing accounts and passwords intact.
+A normal Vercel build runs migrations and preserves account credentials. Production requires an active Super Admin in the configured database. For a new database, use `npm run db:setup:vercel -- --bootstrap` explicitly from an operator shell connected to that database. Supply `PARKING_SUPER_ADMIN_EMAIL` (an address at `lamduan.mfu.ac.th`) and `PARKING_SUPER_ADMIN_PASSWORD` (a unique temporary password of 16–256 characters) in the shell environment. Bootstrap only creates an account when the account table is empty. Sign in at `/login` and change the temporary password.
 
-The Vercel deployment uses Turso for accounts and parking data. Use a separate Turso database for a test environment.
-
-To recover an existing Super Admin on Vercel, set `PARKING_SUPER_ADMIN_EMAIL` to the existing account at the corrected domain and set a new temporary `PARKING_SUPER_ADMIN_PASSWORD`. Set a unique `PARKING_SUPER_ADMIN_RESET_ID` in Production and redeploy. A reset ID can be used only once on a database. Recovery invalidates the account's sessions and requires a password change at next sign-in. Remove the reset ID and temporary password from Vercel after you have regained access.
+To recover an existing Super Admin, set the same database connection and supply the exact email, a new temporary password, and a unique `PARKING_SUPER_ADMIN_RESET_ID` in the operator shell. Run `npm run db:setup:vercel -- --recover` explicitly. Recovery invalidates that account's sessions and requires a password change at the next sign-in. A reset ID can be used only once per database. Clear temporary values after use.
 
 ## User Web and Booking Service integration
 
