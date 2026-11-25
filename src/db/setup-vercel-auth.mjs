@@ -28,9 +28,7 @@ async function audit(transaction, action, email, status) {
   });
 }
 
-async function resetSuperAdmin(transaction, resetId, email, password) {
-  if (!/^[a-z0-9_-]{8,64}$/i.test(resetId)) throw new Error("PARKING_SUPER_ADMIN_RESET_ID must contain 8–64 letters, digits, hyphens or underscores.");
-  const marker = `admin-reset:${resetId}`;
+async function resetSuperAdmin(transaction, marker, email, password) {
   if (await alreadyApplied(transaction, marker)) return false;
   if (!isAdminEmail(email) || !validTemporaryPassword(password)) {
     throw new Error("Password recovery requires the existing @lamduan.mfu.ac.th Super Admin email and a temporary password of 16–256 characters.");
@@ -59,6 +57,10 @@ async function setup() {
   const email = normalizeAdminEmail(process.env.PARKING_SUPER_ADMIN_EMAIL ?? "");
   const password = process.env.PARKING_SUPER_ADMIN_PASSWORD;
   const resetId = process.env.VERCEL_ENV === "production" ? process.env.PARKING_SUPER_ADMIN_RESET_ID : undefined;
+  if (resetId && !/^[a-z0-9_-]{8,64}$/i.test(resetId)) {
+    throw new Error("PARKING_SUPER_ADMIN_RESET_ID must contain 8–64 letters, digits, hyphens or underscores.");
+  }
+  const resetMarker = resetId ? `admin-reset:${resetId}` : undefined;
   const client = createClient({ url, authToken });
   try {
     await client.execute("CREATE TABLE IF NOT EXISTS __migrations (id TEXT PRIMARY KEY NOT NULL, applied_at TEXT NOT NULL)");
@@ -72,10 +74,12 @@ async function setup() {
         await markApplied(transaction, migration);
       }
       const existing = await transaction.execute("SELECT 1 FROM admin_accounts WHERE role = 'super_admin' LIMIT 1");
-      let reset = false;
-      if (resetId) {
-        reset = await resetSuperAdmin(transaction, resetId, email, password);
-      } else if (!existing.rows.length) {
+      const hasSuperAdmin = existing.rows.length > 0;
+      let message = "Turso authentication schema and Super Admin are ready.";
+      if (!hasSuperAdmin) {
+        if (resetMarker && await alreadyApplied(transaction, resetMarker)) {
+          throw new Error("This password recovery ID has already been used. Use a new recovery ID to initialize an account.");
+        }
         if (!isAdminEmail(email) || !validTemporaryPassword(password)) {
           throw new Error("First deploy: set PARKING_SUPER_ADMIN_EMAIL (@lamduan.mfu.ac.th) and PARKING_SUPER_ADMIN_PASSWORD (16–256 characters).");
         }
@@ -84,9 +88,13 @@ async function setup() {
           args: [randomUUID(), email, await hashPassword(password), Date.now()],
         });
         await audit(transaction, "account.bootstrap.super_admin", email, 201);
+        if (resetMarker) await markApplied(transaction, resetMarker);
+        message = "Turso authentication schema initialized and first Super Admin created.";
+      } else if (resetMarker && await resetSuperAdmin(transaction, resetMarker, email, password)) {
+        message = "Super Admin temporary password reset successfully.";
       }
       await transaction.commit();
-      console.log(reset ? "Super Admin temporary password reset successfully." : "Turso authentication schema and Super Admin are ready.");
+      console.log(message);
     } finally {
       transaction.close();
     }
