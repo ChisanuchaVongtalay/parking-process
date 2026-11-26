@@ -83,6 +83,8 @@ To hand over the console, create an account under **Admin Management** with the 
 
 Connect a Turso database to the target Vercel environment and set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`. For a stable domain, set `PARKING_ADMIN_ORIGIN` to its HTTPS origin. Leave it unset when using changing Vercel Preview URLs. Use a separate database for a test environment.
 
+To use an explicit Turso connection in Production, set `PARKING_TURSO_DATABASE_URL` and `PARKING_TURSO_AUTH_TOKEN` as a pair. The Vercel build and the running application both use that pair when present. Keep the token server-side and confirm the selected database contains the production data before switching. Set the same pair on the Snapshot Worker if it should follow the switch.
+
 A normal Vercel build runs migrations and preserves account credentials. For a new database without accounts, use `npm run db:setup:vercel -- --bootstrap` explicitly from an operator shell connected to that database. Supply `PARKING_SUPER_ADMIN_EMAIL` (an address at `lamduan.mfu.ac.th`) and `PARKING_SUPER_ADMIN_PASSWORD` (a unique temporary password of 16–256 characters) in the shell environment. Bootstrap only creates an account when the account table is empty. Sign in at `/login` and change the temporary password.
 
 To recover an existing Super Admin, set the same database connection and supply the exact email, a new temporary password, and a unique `PARKING_SUPER_ADMIN_RESET_ID` in the operator shell. Run `npm run db:setup:vercel -- --recover` explicitly. Recovery invalidates that account's sessions and requires a password change at the next sign-in. A reset ID can be used only once per database. Clear temporary values after use.

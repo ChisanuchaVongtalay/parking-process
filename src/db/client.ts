@@ -2,21 +2,19 @@ import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { createClient, type Client, type InValue, type Transaction } from "@libsql/client";
+import { hasTursoConfiguration, tursoConfiguration } from "./turso-config.mjs";
 
 type Executor = Pick<Client | Transaction, "execute">;
 let client: Client | undefined;
 
 export function usesRemoteDatabase() {
-  return process.env.VERCEL === "1" || Boolean(process.env.TURSO_DATABASE_URL || process.env.TURSO_AUTH_TOKEN);
+  return process.env.VERCEL === "1" || hasTursoConfiguration();
 }
 
 export function databaseClient() {
   if (client) return client;
-  const url = process.env.TURSO_DATABASE_URL;
-  const authToken = process.env.TURSO_AUTH_TOKEN;
   if (usesRemoteDatabase()) {
-    if (!url || !authToken) throw new Error("Turso database is not configured");
-    client = createClient({ url, authToken });
+    client = createClient(tursoConfiguration());
   } else {
     const file = path.resolve(process.env.DATA_DIR || "data", "sqlite", "parking.db");
     mkdirSync(path.dirname(file), { recursive: true });

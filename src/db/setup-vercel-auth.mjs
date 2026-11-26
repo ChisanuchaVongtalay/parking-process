@@ -3,6 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { createClient } from "@libsql/client";
 import { hashPassword, isAdminEmail, normalizeAdminEmail } from "../lib/auth/password.mjs";
 import { logAuthDatabase } from "./auth-diagnostics.mjs";
+import { tursoConfiguration } from "./turso-config.mjs";
 
 const migrationsDir = new URL("../../drizzle/", import.meta.url);
 
@@ -51,9 +52,7 @@ async function resetSuperAdmin(transaction, marker, email, password) {
 }
 
 async function setup() {
-  const url = process.env.TURSO_DATABASE_URL;
-  const authToken = process.env.TURSO_AUTH_TOKEN;
-  if (!url || !authToken) throw new Error("Set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN for this deployment.");
+  const connection = tursoConfiguration();
 
   const args = process.argv.slice(2);
   const mode = args[0] ?? "migrate";
@@ -68,7 +67,7 @@ async function setup() {
     throw new Error("PARKING_SUPER_ADMIN_RESET_ID must contain 8–64 letters, digits, hyphens or underscores.");
   }
   const resetMarker = mode === "--recover" ? `admin-reset:${resetId}` : undefined;
-  const client = createClient({ url, authToken });
+  const client = createClient(connection);
   try {
     await client.execute("CREATE TABLE IF NOT EXISTS __migrations (id TEXT PRIMARY KEY NOT NULL, applied_at TEXT NOT NULL)");
     const transaction = await client.transaction("write");

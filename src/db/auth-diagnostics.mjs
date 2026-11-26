@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
+import { tursoConfiguration } from "./turso-config.mjs";
 
 export async function logAuthDatabase(client, stage) {
   if (process.env.VERCEL !== "1") return;
   try {
-    const hostname = new URL(process.env.TURSO_DATABASE_URL).hostname;
+    const hostname = new URL(tursoConfiguration().url).hostname;
     const transaction = await client.transaction("write");
     let state;
     try {
