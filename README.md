@@ -105,6 +105,12 @@ Vehicle types are `Sedan`, `Hatchback`, `SUV`, `Pickup`, `Van`, `Motorcycle`, an
 
 Use `GET /api/public/zones/status` for the User Web. Each item has `zone`, `total_slots`, `free_slots`, `occupied_slots`, `unknown_slots`, and `last_updated`. Counts use configured active logical slots. An overlapping camera view does not add another slot, and stale, unseen, or conflicting observations count as unknown. `last_updated` is an ISO 8601 timestamp or `null` when the zone has no fresh observations. `GET /api/public/zones` and `GET /api/public/zones/{zoneId}/summary` use the same counts. A physical availability estimate does not resolve booking eligibility.
 
+### Live booking and notifications
+
+The User Web backend sends `POST /api/integration/v1/parking-bookings` with its integration key and `{applicantId, role, command}`. Derive the applicant and role from the verified session. The server checks the applicant's approved vehicle of the requested type, effective policy, fresh logical-slot observations, and reservation overlap before it saves a booking. A client `requestId` allows a safe retry. When no booking policy has been published, the defaults are one booking for up to 60 minutes and 24 hours in advance for students, and two bookings for up to 120 minutes and 48 hours in advance for staff.
+
+Bookings, cancellation history, notification read state, and followed zones are saved in the Admin database. In-app notifications are reconciled when the User Web polls the service. A reminder within five minutes requires the app to poll before the booking expires, and an expiry appears on the next visit.
+
 ## Parking operations on Vercel
 
 Vercel setup runs the tracked migrations on Turso, including the configured zone and camera inventory. Zones, cameras, logical slot links and observations use this database. For manual calibration, reference images, uploaded test frames, and JSON exports are stored privately using the same Turso connection. Cloud uploads are limited to 3 MiB. Local deployments use the persistent directories under `DATA_DIR` for parking media.

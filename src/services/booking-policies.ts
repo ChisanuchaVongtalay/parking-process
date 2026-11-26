@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Transaction } from "@libsql/client";
 import { queryRow, queryRows, writeTransaction } from "@/db/client";
 
 const limitsSchema = z.object({
@@ -24,8 +25,8 @@ export async function getPolicies() {
   return (await queryRows<Row>(`SELECT ${selection} FROM booking_policy ORDER BY version DESC LIMIT 10`)).map(toPolicy);
 }
 
-export async function getEffectivePolicy() {
-  const row = await queryRow<Row>(`SELECT ${selection} FROM booking_policy WHERE effective_at <= ? ORDER BY effective_at DESC, version DESC LIMIT 1`, [Date.now()]);
+export async function getEffectivePolicy(transaction?: Transaction) {
+  const row = await queryRow<Row>(`SELECT ${selection} FROM booking_policy WHERE effective_at <= ? ORDER BY effective_at DESC, version DESC LIMIT 1`, [Date.now()], transaction);
   return row ? toPolicy(row) : null;
 }
 

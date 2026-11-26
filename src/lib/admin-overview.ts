@@ -1,11 +1,11 @@
 import { queryRow, queryRows } from "@/db/client";
-import { db } from "@/db";
+import type { Transaction } from "@libsql/client";
 
 const configuredAge = Number(process.env.SNAPSHOT_MAX_AGE_SECONDS || 900);
 const maxAge = Number.isFinite(configuredAge) && configuredAge > 0 ? configuredAge : 900;
 export { adminTime } from "./admin-time";
 
-export async function readParkingOverview() {
+export async function readParkingOverview(transaction?: Transaction) {
   const cutoff = Date.now() - maxAge * 1000;
   const slots = await queryRows(`
     WITH latest AS (
@@ -31,7 +31,7 @@ export async function readParkingOverview() {
     WHERE ls.is_active
     GROUP BY ls.id
     ORDER BY ls.display_order, ls.slot_code
-  `, [cutoff, cutoff]) as Array<{
+  `, [cutoff, cutoff], transaction) as Array<{
     id: string; zoneId: string; code: string; vehicleType: string; cameras: string | null;
     minOccupied: number | null; maxOccupied: number | null; observedAt: number | null;
   }>;
@@ -49,7 +49,11 @@ export async function readParkingOverview() {
     slotsByZone.set(slot.zoneId, group);
   }
 
-  const zones = (await db.query.zones.findMany()).sort((a, b) => a.code.localeCompare(b.code)).map((zone) => {
+  const zoneRows = await queryRows<{ id: string; code: string; name: string; description: string | null; createdAt: number; updatedAt: number }>(
+    "SELECT id, code, name, description, created_at AS createdAt, updated_at AS updatedAt FROM zones", [], transaction,
+  );
+  const zones = zoneRows.sort((a, b) => a.code.localeCompare(b.code)).map((row) => {
+    const zone = { ...row, createdAt: new Date(row.createdAt), updatedAt: new Date(row.updatedAt) };
     const slots = slotsByZone.get(zone.id) ?? [];
     const free = slots.filter((slot) => slot.status === "Free").length;
     const occupied = slots.filter((slot) => slot.status === "Occupied").length;
