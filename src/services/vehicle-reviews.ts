@@ -1,16 +1,20 @@
 import { createHash } from "node:crypto";
+import type { Transaction } from "@libsql/client";
 import { z } from "zod";
 import { queryRow, queryRows, writeTransaction } from "@/db/client";
 import { CLOUD_FILE_LIMIT, writeDatabaseFile } from "@/lib/storage";
 
-export const vehicleReviewSchema = z.object({
-  id: z.string().regex(/^[a-z0-9][a-z0-9_-]{0,99}$/i),
-  applicantId: z.string().trim().min(1).max(120),
-  vehicleId: z.string().trim().min(1).max(120),
+export const applicantIdSchema = z.string().trim().min(1).max(120);
+export const vehicleFieldsSchema = z.object({
   plate: z.string().trim().min(1).max(32),
   province: z.string().trim().min(1).max(100),
   brand: z.string().trim().min(1).max(100),
   vehicleType: z.enum(["Sedan", "Hatchback", "SUV", "Pickup", "Van", "Motorcycle", "Other"]),
+});
+export const vehicleReviewSchema = vehicleFieldsSchema.extend({
+  id: z.string().regex(/^[a-z0-9][a-z0-9_-]{0,99}$/i),
+  applicantId: applicantIdSchema,
+  vehicleId: z.string().trim().min(1).max(120),
 });
 
 export const decisionSchema = z.object({
@@ -29,12 +33,13 @@ export type Review = Submission & {
   reviewedAt: number | null;
   reviewedBy: string | null;
   createdAt: number;
+  deletedAt: number | null;
 };
 
 export const reviewColumns = `id, applicant_id AS applicantId, vehicle_id AS vehicleId,
   plate, province, brand, vehicle_type AS vehicleType, status, version, reason,
   evidence_type AS evidenceType, evidence_hash AS evidenceHash, reviewed_at AS reviewedAt,
-  reviewed_by AS reviewedBy, created_at AS createdAt`;
+  reviewed_by AS reviewedBy, created_at AS createdAt, deleted_at AS deletedAt`;
 
 export function userReview(review: Review) {
   return {
@@ -44,11 +49,11 @@ export function userReview(review: Review) {
 }
 
 export function getReview(id: string) {
-  return queryRow<Review>(`SELECT ${reviewColumns} FROM vehicle_reviews WHERE id = ?`, [id]);
+  return queryRow<Review>(`SELECT ${reviewColumns} FROM vehicle_reviews WHERE id = ? AND deleted_at IS NULL`, [id]);
 }
 
-export function listApplicantReviews(applicantId: string) {
-  return queryRows<Review>(`SELECT ${reviewColumns} FROM vehicle_reviews WHERE applicant_id = ? ORDER BY created_at DESC, id`, [applicantId]);
+export function listApplicantReviews(applicantId: string, transaction?: Transaction) {
+  return queryRows<Review>(`SELECT ${reviewColumns} FROM vehicle_reviews WHERE applicant_id = ? AND deleted_at IS NULL ORDER BY created_at DESC, id`, [applicantId], transaction);
 }
 
 export async function addVehicleReview(submission: Submission, file: File) {
@@ -64,7 +69,7 @@ export async function addVehicleReview(submission: Submission, file: File) {
     const existing = await queryRow<Review>(`SELECT ${reviewColumns} FROM vehicle_reviews WHERE id = ?`, [submission.id], transaction);
     if (existing) {
       const keys = Object.keys(submission) as (keyof Submission)[];
-      return keys.every((key) => submission[key] === existing[key]) && existing.evidenceHash === digest
+      return existing.deletedAt === null && keys.every((key) => submission[key] === existing[key]) && existing.evidenceHash === digest
         ? { code: "repeat", review: existing } as const : { code: "conflict" } as const;
     }
     const review = await queryRow<Review>(`
@@ -81,7 +86,8 @@ export async function addVehicleReview(submission: Submission, file: File) {
 export async function decideVehicleReview(id: string, change: z.infer<typeof decisionSchema>, actor: string) {
   return queryRow<Review>(`
     UPDATE vehicle_reviews SET status = ?, reason = ?, reviewed_at = ?, reviewed_by = ?, version = version + 1
-    WHERE id = ? AND status = 'pending' AND version = ?
+    WHERE id = ? AND status = 'pending' AND version = ? AND deleted_at IS NULL
+      AND NOT EXISTS (SELECT 1 FROM vehicle_change_requests WHERE review_id = vehicle_reviews.id AND status = 'pending')
     RETURNING ${reviewColumns}
   `, [change.status, change.reason || null, Date.now(), actor, id, change.version]);
 }

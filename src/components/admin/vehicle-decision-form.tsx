@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
-export function VehicleDecisionForm({ id, version }: { id: string; version: number }) {
+export function VehicleDecisionForm({ id, version, changeRequest = false, redirectOnApprove = false }: {
+  id: string; version?: number; changeRequest?: boolean; redirectOnApprove?: boolean;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -24,7 +26,8 @@ export function VehicleDecisionForm({ id, version }: { id: string; version: numb
     setBusy(true);
     setMessage("");
     try {
-      const response = await fetch(`/api/admin/vehicle-reviews/${encodeURIComponent(id)}/decision`, {
+      const resource = changeRequest ? "vehicle-changes" : "vehicle-reviews";
+      const response = await fetch(`/api/admin/${resource}/${encodeURIComponent(id)}/decision`, {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({ status, version, reason }),
       });
@@ -33,7 +36,8 @@ export function VehicleDecisionForm({ id, version }: { id: string; version: numb
         setMessage(body.error || "บันทึกผลตรวจไม่สำเร็จ");
         return;
       }
-      router.refresh();
+      if (redirectOnApprove && status === "approved") router.replace("/admin/vehicle-approvals");
+      else router.refresh();
     } catch {
       setMessage("เชื่อมต่อระบบไม่สำเร็จ");
     } finally {

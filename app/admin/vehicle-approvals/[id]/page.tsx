@@ -4,11 +4,14 @@ import { VehicleDecisionForm } from "@/components/admin/vehicle-decision-form";
 import { requireAdminPage } from "@/lib/auth/session";
 import { adminTime } from "@/lib/admin-time";
 import { getReview } from "@/services/vehicle-reviews";
+import { latestVehicleChange } from "@/services/vehicle-changes";
+import { VehicleAdminActions } from "@/components/admin/vehicle-admin-actions";
 
 export default async function ReviewPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdminPage();
   const review = await getReview((await params).id);
   if (!review) notFound();
+  const change = await latestVehicleChange(review.id);
   const evidenceUrl = `/api/admin/vehicle-reviews/${encodeURIComponent(review.id)}/evidence`;
   const isImage = review.evidenceType.startsWith("image/");
 
@@ -27,7 +30,9 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
         {!isImage && <a className="admin-link" href={evidenceUrl}>ดาวน์โหลดหลักฐาน PDF</a>}
       </Panel>
       <Panel title="ผลการตรวจ">
-        {review.status === "pending" ? <VehicleDecisionForm id={review.id} version={review.version} /> : <>
+        {review.status === "pending" ? (change?.status === "pending"
+          ? <p>ตรวจคำขอแก้ไขหรือลบก่อนอนุมัติการลงทะเบียนรถ</p>
+          : <VehicleDecisionForm id={review.id} version={review.version} />) : <>
           <Status tone={review.status === "approved" ? "good" : "bad"}>{review.status === "approved" ? "อนุมัติแล้ว" : "ปฏิเสธแล้ว"}</Status>
           <dl className="admin-fields mt-3">
             <div><dt>ผู้ตรวจ</dt><dd>{review.reviewedBy}</dd></div>
@@ -37,5 +42,19 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
         </>}
       </Panel>
     </div>
+    {change && <Panel title={change.kind === "edit" ? "คำขอแก้ไขข้อมูลรถ" : "คำขอลบรถ"}>
+      {change.status === "pending" ? <>
+        {change.changes && <dl className="admin-fields mb-4">
+          <div><dt>ทะเบียน · จังหวัด</dt><dd>{change.changes.plate} · {change.changes.province}</dd></div>
+          <div><dt>ยี่ห้อ · ประเภท</dt><dd>{change.changes.brand} · {change.changes.vehicleType}</dd></div>
+        </dl>}
+        <VehicleDecisionForm id={change.id} changeRequest redirectOnApprove={change.kind === "delete"} />
+      </> : <p>{change.status === "approved" ? "อนุมัติแล้ว" : "ปฏิเสธแล้ว"}{change.reason ? ` · ${change.reason}` : ""}</p>}
+    </Panel>}
+    <Panel title="จัดการข้อมูลรถ">
+      {change?.status === "pending" && <p className="mb-3">การแก้ไขหรือลบโดยตรงจะสรุปผลคำขอที่รอตรวจอยู่ตามข้อมูลที่ผู้ดูแลบันทึก</p>}
+      <VehicleAdminActions key={review.version} vehicle={{ id: review.id, version: review.version, plate: review.plate,
+        province: review.province, brand: review.brand, vehicleType: review.vehicleType }} />
+    </Panel>
   </>;
 }
