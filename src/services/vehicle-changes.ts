@@ -14,25 +14,27 @@ export const changeDecisionSchema = z.object({
   status: z.enum(["approved", "rejected"]),
   reason: z.string().trim().max(1000).optional(),
 }).refine((value) => value.status === "approved" || Boolean(value.reason));
+export const vehicleRequestReasonSchema = z.string().trim().min(1).max(1000);
 
 type Mutation = z.infer<typeof vehicleMutationSchema>;
 type Decision = z.infer<typeof changeDecisionSchema>;
 type ChangeRow = {
   id: string; reviewId: string; kind: Mutation["kind"]; changesJson: string | null;
   baseVersion: number; status: Decision["status"] | "pending";
-  reason: string | null; createdAt: number; reviewedAt: number | null;
+  requestReason: string | null; reason: string | null; createdAt: number; reviewedAt: number | null;
 };
 const changeColumns = `c.id, c.review_id AS reviewId, c.kind, c.changes_json AS changesJson,
-  c.base_version AS baseVersion, c.status, c.reason, c.created_at AS createdAt, c.reviewed_at AS reviewedAt`;
+  c.base_version AS baseVersion, c.status, c.request_reason AS requestReason, c.reason,
+  c.created_at AS createdAt, c.reviewed_at AS reviewedAt`;
 
 export function vehicleChange<T extends ChangeRow>(row: T) {
   const { changesJson, ...data } = row;
   return { ...data, changes: changesJson ? vehicleFieldsSchema.parse(JSON.parse(changesJson)) : null };
 }
 
-export async function latestVehicleChange(id: string) {
+export async function latestVehicleChange(id: string, transaction?: Transaction) {
   const row = await queryRow<ChangeRow>(`SELECT ${changeColumns} FROM vehicle_change_requests c
-    WHERE c.review_id = ? ORDER BY c.rowid DESC LIMIT 1`, [id]);
+    WHERE c.review_id = ? ORDER BY c.rowid DESC LIMIT 1`, [id], transaction);
   return row ? vehicleChange(row) : null;
 }
 
@@ -55,7 +57,7 @@ export async function applicantVehicleChanges(applicantId: string, transaction?:
   return rows.map(vehicleChange);
 }
 
-export async function requestVehicleChange(id: string, applicantId: string, mutation: Mutation) {
+export async function requestVehicleChange(id: string, applicantId: string, mutation: Mutation, requestReason: string) {
   return writeTransaction(async (transaction) => {
     const review = await queryRow<Review>(`SELECT ${reviewColumns} FROM vehicle_reviews
       WHERE id = ? AND applicant_id = ? AND deleted_at IS NULL`, [id, applicantId], transaction);
@@ -65,12 +67,12 @@ export async function requestVehicleChange(id: string, applicantId: string, muta
       WHERE c.review_id = ? AND c.status = 'pending'`, [id], transaction);
     const changes = mutation.kind === "edit" ? JSON.stringify(mutation.changes) : null;
     if (pending) {
-      return pending.kind === mutation.kind && pending.changesJson === changes
+      return pending.kind === mutation.kind && pending.changesJson === changes && pending.requestReason === requestReason
         ? { code: "repeat", id: pending.id } as const : { code: "conflict" } as const;
     }
     const changeId = randomUUID();
-    await query(`INSERT INTO vehicle_change_requests (id, review_id, kind, changes_json, base_version, created_at)
-      VALUES (?, ?, ?, ?, ?, ?)`, [changeId, id, mutation.kind, changes, mutation.version, Date.now()], transaction);
+    await query(`INSERT INTO vehicle_change_requests (id, review_id, kind, changes_json, base_version, created_at, request_reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?)`, [changeId, id, mutation.kind, changes, mutation.version, Date.now(), requestReason], transaction);
     return { code: "created", id: changeId } as const;
   });
 }

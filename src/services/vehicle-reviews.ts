@@ -48,8 +48,8 @@ export function userReview(review: Review) {
   };
 }
 
-export function getReview(id: string) {
-  return queryRow<Review>(`SELECT ${reviewColumns} FROM vehicle_reviews WHERE id = ? AND deleted_at IS NULL`, [id]);
+export function getReview(id: string, transaction?: Transaction) {
+  return queryRow<Review>(`SELECT ${reviewColumns} FROM vehicle_reviews WHERE id = ? AND deleted_at IS NULL`, [id], transaction);
 }
 
 export function listApplicantReviews(applicantId: string, transaction?: Transaction) {

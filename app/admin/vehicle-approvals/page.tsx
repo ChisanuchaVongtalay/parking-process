@@ -6,6 +6,7 @@ import { adminTime } from "@/lib/admin-time";
 import { DataTable, Notice, PageHeading, Panel, Stats, Status } from "@/components/admin/admin-ui";
 import { reviewColumns, type Review } from "@/services/vehicle-reviews";
 import { listPendingVehicleChanges } from "@/services/vehicle-changes";
+import { Button } from "@/components/ui/button";
 
 const states = { pending: "รอตรวจ", approved: "อนุมัติแล้ว", rejected: "ปฏิเสธแล้ว" };
 const tones = { pending: "warn", approved: "good", rejected: "bad" } as const;
@@ -24,6 +25,13 @@ export default async function VehicleApprovals({ searchParams }: { searchParams:
     listPendingVehicleChanges(size + 1, (changePageNumber - 1) * size),
   ]);
   const count = (key: Review["status"]) => counts.find((row) => row.status === key)?.total ?? 0;
+  const total = counts.reduce((sum, row) => sum + row.total, 0);
+  const filters = [
+    { key: null, label: "ทั้งหมด", total, Icon: Car },
+    { key: "pending", label: states.pending, total: count("pending"), Icon: Clock },
+    { key: "approved", label: states.approved, total: count("approved"), Icon: FileCheck },
+    { key: "rejected", label: states.rejected, total: count("rejected"), Icon: FileX },
+  ];
   const route = (to: number) => `?page=${to}${filter ? `&status=${filter}` : ""}`;
   const changeRoute = (to: number) => `${route(pageNumber)}&changePage=${to}`;
 
@@ -35,14 +43,14 @@ export default async function VehicleApprovals({ searchParams }: { searchParams:
       { label: "Pending reviews", value: count("pending"), icon: <Clock />, tone: "warn" },
       { label: "Approved", value: count("approved"), icon: <FileCheck />, tone: "good" },
       { label: "Rejected", value: count("rejected"), icon: <FileX />, tone: "bad" },
-      { label: "Total", value: counts.reduce((sum, row) => sum + row.total, 0), icon: <Car /> },
+      { label: "Total", value: total, icon: <Car /> },
     ]} />
     <Panel title="คำขอแก้ไขหรือลบรถ">
       <DataTable headings={["คำขอ", "ทะเบียน", "วันที่ส่ง", "Action"]}>
         {changes.slice(0, size).map((change) => <tr key={change.id}>
           <td>{change.kind === "edit" ? "แก้ไขข้อมูล" : "ลบรถ"}</td><td>{change.plate} · {change.province}</td>
           <td>{adminTime(change.createdAt)}</td>
-          <td><Link className="admin-link" href={`/admin/vehicle-approvals/${encodeURIComponent(change.reviewId)}`}>ตรวจคำขอ</Link></td>
+          <td><Link className="admin-link" href={`/admin/vehicle-approvals/${encodeURIComponent(change.reviewId)}#vehicle-change-request`}>ตรวจคำขอ</Link></td>
         </tr>)}
         {!changes.length && <tr><td colSpan={4}>ยังไม่มีคำขอรอตรวจ</td></tr>}
       </DataTable>
@@ -52,10 +60,21 @@ export default async function VehicleApprovals({ searchParams }: { searchParams:
       </div>
     </Panel>
     <Panel title="Review queue">
-      <nav aria-label="กรองสถานะคำขอ" className="admin-actions mb-3">
-        <Link className="admin-link" href="/admin/vehicle-approvals" aria-current={!filter ? "page" : undefined}>ทั้งหมด</Link>
-        {Object.entries(states).map(([state, label]) =>
-          <Link key={state} className="admin-link" href={`?status=${state}`} aria-current={filter === state ? "page" : undefined}>{label}</Link>)}
+      <nav aria-label="กรองสถานะคำขอ" className="mb-4 flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2">
+        {filters.map(({ key, label, total, Icon }) => {
+          const selected = filter === key;
+          const params = new URLSearchParams();
+          if (key) params.set("status", key);
+          if (changePageNumber > 1) params.set("changePage", String(changePageNumber));
+          return <Button key={label} asChild size="sm" variant={selected ? "default" : "outline"}>
+            <Link href={`/admin/vehicle-approvals${params.size ? `?${params}` : ""}`} aria-current={selected ? "page" : undefined}>
+              <Icon size={16} aria-hidden="true" />{label}
+              <span className={`rounded-full px-2 py-0.5 text-xs tabular-nums ${selected ? "bg-white/15" : "bg-slate-100 text-slate-700"}`}>
+                {total}
+              </span>
+            </Link>
+          </Button>;
+        })}
       </nav>
       <DataTable headings={["คำขอ", "ทะเบียน", "ประเภท", "วันที่ส่ง", "สถานะ", "Action"]}>
         {all.slice(0, size).map((review) => <tr key={review.id}>

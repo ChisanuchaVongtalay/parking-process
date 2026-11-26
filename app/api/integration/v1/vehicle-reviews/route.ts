@@ -1,5 +1,5 @@
 import { fail, ok } from "@/lib/http";
-import { databaseClient } from "@/db/client";
+import { writeTransaction } from "@/db/client";
 import { integrationAccess } from "@/lib/integration-access";
 import { addVehicleReview, listApplicantReviews, userReview, vehicleReviewSchema } from "@/services/vehicle-reviews";
 import { applicantVehicleChanges } from "@/services/vehicle-changes";
@@ -9,11 +9,9 @@ export async function GET(request: Request) {
   if (denied) return denied;
   const applicantId = new URL(request.url).searchParams.get("applicantId");
   if (!applicantId?.trim() || applicantId.length > 120) return fail("A valid applicantId is required", 422);
-  const transaction = await databaseClient().transaction("read");
-  try {
+  return writeTransaction(async (transaction) => {
     const reviews = await listApplicantReviews(applicantId, transaction);
     const changes = await applicantVehicleChanges(applicantId, transaction);
-    await transaction.commit();
     const byVehicle = new Map(changes.map((change) => [change.reviewId, change]));
     const items = reviews.map((review) => ({
       ...userReview(review), plate: review.plate, province: review.province, brand: review.brand, vehicleType: review.vehicleType,
@@ -22,9 +20,7 @@ export async function GET(request: Request) {
     const response = ok({ items, deleted: changes.filter((change) => change.deletedAt !== null) });
     response.headers.set("Cache-Control", "private, no-store");
     return response;
-  } finally {
-    transaction.close();
-  }
+  });
 }
 
 export async function POST(request: Request) {
