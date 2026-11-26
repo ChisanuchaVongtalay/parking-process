@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { databaseClient } from "@/db/client";
+import { logAuthDatabase } from "@/db/auth-diagnostics.mjs";
 import { authQuery, authRow, authWrite } from "@/lib/auth/database";
 import { fail } from "@/lib/http";
 import { hasSameOrigin } from "@/lib/auth/access";
@@ -44,8 +46,10 @@ export async function POST(request: Request) {
     [session.id, passwordHash], transaction,
   ));
   if (!persisted?.confirmed) {
+    await logAuthDatabase(databaseClient(), "password-unconfirmed");
     return fail("ยืนยันรหัสผ่านใหม่ไม่ได้ กรุณาเข้าสู่ระบบใหม่หรือติดต่อผู้ดูแล", 503);
   }
+  await logAuthDatabase(databaseClient(), "password-confirmed");
 
   const response = NextResponse.json({ data: { next: "/login?changed=1" } });
   clearSessionCookie(response);

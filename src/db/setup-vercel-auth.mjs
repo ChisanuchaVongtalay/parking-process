@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
 import { createClient } from "@libsql/client";
 import { hashPassword, isAdminEmail, normalizeAdminEmail } from "../lib/auth/password.mjs";
+import { logAuthDatabase } from "./auth-diagnostics.mjs";
 
 const migrationsDir = new URL("../../drizzle/", import.meta.url);
 
@@ -105,6 +106,7 @@ async function setup() {
     } finally {
       transaction.close();
     }
+    if (mode === "migrate") await logAuthDatabase(client, "build");
   } finally {
     client.close();
   }

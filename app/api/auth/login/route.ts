@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { databaseClient } from "@/db/client";
+import { logAuthDatabase } from "@/db/auth-diagnostics.mjs";
 import { authRow, authWrite } from "@/lib/auth/database";
 import { fail } from "@/lib/http";
 import { hasSameOrigin } from "@/lib/auth/access";
@@ -21,7 +23,10 @@ export async function POST(request: Request) {
     "SELECT id, password_hash AS passwordHash FROM admin_accounts WHERE email = ? AND active = 1", [email], transaction,
   ));
   const valid = await verifyPassword(input.data.password, account?.passwordHash);
-  if (!valid || !account) return fail("อีเมลหรือรหัสผ่านไม่ถูกต้อง", 401);
+  if (!valid || !account) {
+    await logAuthDatabase(databaseClient(), "login-rejected");
+    return fail("อีเมลหรือรหัสผ่านไม่ถูกต้อง", 401);
+  }
 
   const signIn = await authWrite(async (transaction) => {
     const current = await authRow<{ mustChange: number }>(
@@ -36,6 +41,7 @@ export async function POST(request: Request) {
   });
 
   if (!signIn) return fail("อีเมลหรือรหัสผ่านไม่ถูกต้อง", 401);
+  await logAuthDatabase(databaseClient(), "login-accepted");
   await revokeCurrentSession();
   const response = NextResponse.json({ data: { next: signIn.mustChange ? "/change-password" : "/admin" } });
   setSessionCookie(response, signIn.token);
