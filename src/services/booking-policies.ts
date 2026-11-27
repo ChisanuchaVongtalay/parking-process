@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Transaction } from "@libsql/client";
 import { queryRow, queryRows, writeTransaction } from "@/db/client";
+import { recordAdminNotification } from "./admin-notifications";
 
 const limitsSchema = z.object({
   maxActive: z.number().int().min(0).max(100),
@@ -36,11 +37,13 @@ export function publishPolicy(input: z.infer<typeof policySchema>, actor: string
     const version = latest?.version ?? 0;
     if (input.expectedVersion !== version) return null;
     const effectiveAt = Date.parse(`${input.effectiveDate}T00:00:00+07:00`);
+    const at = Date.now();
     const row = await queryRow<Row>(`
       INSERT INTO booking_policy (version, policy_json, effective_at, updated_at, updated_by)
       VALUES (?, ?, ?, ?, ?) RETURNING ${selection}
-    `, [version + 1, JSON.stringify({ student: input.student, staff: input.staff }), effectiveAt, Date.now(), actor], transaction);
+    `, [version + 1, JSON.stringify({ student: input.student, staff: input.staff }), effectiveAt, at, actor], transaction);
     if (!row) throw new Error("Booking policy was not saved");
+    await recordAdminNotification(transaction, "booking_policy", String(row.version), at, `v${row.version} · มีผล ${input.effectiveDate} (เวลาไทย)`);
     return toPolicy(row);
   });
 }

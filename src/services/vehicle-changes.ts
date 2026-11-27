@@ -4,6 +4,7 @@ import { z } from "zod";
 import { query, queryRow, queryRows, writeTransaction } from "@/db/client";
 import { recordAudit } from "@/lib/auth/session";
 import { reviewColumns, vehicleFieldsSchema, type Review } from "./vehicle-reviews";
+import { recordAdminNotification } from "./admin-notifications";
 
 const version = z.number().int().positive();
 export const vehicleMutationSchema = z.discriminatedUnion("kind", [
@@ -71,8 +72,10 @@ export async function requestVehicleChange(id: string, applicantId: string, muta
         ? { code: "repeat", id: pending.id } as const : { code: "conflict" } as const;
     }
     const changeId = randomUUID();
+    const at = Date.now();
     await query(`INSERT INTO vehicle_change_requests (id, review_id, kind, changes_json, base_version, created_at, request_reason)
-      VALUES (?, ?, ?, ?, ?, ?, ?)`, [changeId, id, mutation.kind, changes, mutation.version, Date.now(), requestReason], transaction);
+      VALUES (?, ?, ?, ?, ?, ?, ?)`, [changeId, id, mutation.kind, changes, mutation.version, at, requestReason], transaction);
+    await recordAdminNotification(transaction, mutation.kind === "edit" ? "vehicle_edit" : "vehicle_removal", id, at);
     return { code: "created", id: changeId } as const;
   });
 }

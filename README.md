@@ -79,6 +79,12 @@ For the first CapRover deployment, set `PARKING_SUPER_ADMIN_EMAIL`, `PARKING_SUP
 
 To hand over the console, create an account under **Admin Management** with the **Super Admin** role. Give the new owner their temporary password privately. Once the owner signs in and verifies access, they can disable the outgoing account. Role changes, password resets and disabled accounts revoke existing sessions. The default session lifetime is 30 minutes from sign-in and is configurable in **System Settings** for subsequent sign-ins. Public parking status endpoints remain available separately from the Admin Console.
 
+### Admin notifications
+
+The notification bell reports new vehicle registrations, vehicle edit and removal requests, booking policy publications, camera capture incidents, and camera recoveries. Admins and Super Admins have separate read states. An open Admin Console checks for new events every 30 seconds when visible.
+
+Apply the database migrations before restarting the Admin web app and Snapshot Worker. The worker records capture failures and recoveries. The Admin notification feed also checks for stale captures using `SNAPSHOT_MAX_AGE_SECONDS`, including when the worker has stopped. Disabled cameras and cameras without a stream URL are excluded from these alerts.
+
 ## Vercel deployment
 
 Connect a Turso database to the target Vercel environment and set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`. For a stable domain, set `PARKING_ADMIN_ORIGIN` to its HTTPS origin. Leave it unset when using changing Vercel Preview URLs. Use a separate database for a test environment.

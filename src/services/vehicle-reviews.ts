@@ -3,6 +3,7 @@ import type { Transaction } from "@libsql/client";
 import { z } from "zod";
 import { queryRow, queryRows, writeTransaction } from "@/db/client";
 import { CLOUD_FILE_LIMIT, writeDatabaseFile } from "@/lib/storage";
+import { recordAdminNotification } from "./admin-notifications";
 
 export const applicantIdSchema = z.string().trim().min(1).max(120);
 export const vehicleFieldsSchema = z.object({
@@ -79,6 +80,7 @@ export async function addVehicleReview(submission: Submission, file: File) {
       submission.brand, submission.vehicleType, fileType, digest, Date.now()], transaction);
     await writeDatabaseFile(`evidence/${submission.id}`, bytes, transaction);
     if (!review) throw new Error("Vehicle review was not saved");
+    await recordAdminNotification(transaction, "vehicle_registration", review.id, review.createdAt);
     return { code: "created", review } as const;
   });
 }

@@ -1,11 +1,11 @@
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import { db } from "../../src/db";
-import { query, usesRemoteDatabase } from "../../src/db/client";
-import { sql } from "drizzle-orm";
+import { query, usesRemoteDatabase, writeTransaction } from "../../src/db/client";
 import { saveWorkerSnapshot } from "../../src/lib/storage";
 import { cameras } from "../../src/db/schema";
 import { runRuntimeProcessing } from "../../src/lib/runtime/run-pipeline";
+import { closeCameraIncident, openCameraIncident } from "../../src/services/admin-camera-alerts";
 import { captureFrame, localStorage, SnapshotWorker } from "./worker";
 
 function positiveInt(name: string, fallback: number): number {
@@ -30,13 +30,30 @@ const worker = new SnapshotWorker({
   capture: (url, signal) => captureFrame(url, signal, timeout, transport),
   save: usesRemoteDatabase() ? saveWorkerSnapshot : storage.saveLatest,
   async success(id, imagePath, at) {
-    await db.transaction(async (tx) => {
-      await tx.update(cameras).set({ latestSnapshotPath: imagePath, updatedAt: at }).where(eq(cameras.id, id)).run();
-      await tx.run(sql`INSERT INTO snapshot_capture_status (camera_id, last_success_at, last_attempt_at, last_error) VALUES (${id}, ${at.getTime()}, ${at.getTime()}, NULL) ON CONFLICT(camera_id) DO UPDATE SET last_success_at=excluded.last_success_at, last_attempt_at=excluded.last_attempt_at, last_error=NULL`);
+    await writeTransaction(async (transaction) => {
+      const time = at.getTime();
+      const status = await query(`
+        INSERT INTO snapshot_capture_status (camera_id, last_success_at, last_attempt_at, last_error)
+        VALUES (?, ?, ?, NULL) ON CONFLICT(camera_id) DO UPDATE SET
+          last_success_at = excluded.last_success_at, last_attempt_at = excluded.last_attempt_at, last_error = NULL
+        WHERE snapshot_capture_status.last_attempt_at <= excluded.last_attempt_at
+      `, [id, time, time], transaction);
+      if (!status.rowsAffected) return;
+      await query("UPDATE cameras SET latest_snapshot_path = ?, updated_at = ? WHERE id = ?", [imagePath, time, id], transaction);
+      await closeCameraIncident(id, time, transaction);
     });
   },
   async failure(id, at, error) {
-    await query("INSERT INTO snapshot_capture_status (camera_id, last_attempt_at, last_error) VALUES (?, ?, ?) ON CONFLICT(camera_id) DO UPDATE SET last_attempt_at=excluded.last_attempt_at, last_error=excluded.last_error", [id, at.getTime(), error]);
+    await writeTransaction(async (transaction) => {
+      const time = at.getTime();
+      const status = await query(`
+        INSERT INTO snapshot_capture_status (camera_id, last_attempt_at, last_error)
+        VALUES (?, ?, ?) ON CONFLICT(camera_id) DO UPDATE SET
+          last_attempt_at = excluded.last_attempt_at, last_error = excluded.last_error
+        WHERE snapshot_capture_status.last_attempt_at <= excluded.last_attempt_at
+      `, [id, time, error], transaction);
+      if (status.rowsAffected) await openCameraIncident(id, "error", time, transaction);
+    });
   },
   async process(id, imagePath, at) { await runRuntimeProcessing({ cameraId: id, snapshotPath: imagePath, capturedAt: at }); },
   log: (message) => console.log(new Date().toISOString(), message),
